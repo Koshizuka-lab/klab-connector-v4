@@ -1,39 +1,27 @@
 {
     "basic_auth": [
         {
-            "domain" : "example.com:8080",
-            "basic_id" : "anonymous",
-            "basic_pass" : "anonymous"
+            "domain": "example.com:8080",
+            "basic_id": "anonymous",
+            "basic_pass": "anonymous"
         }
     ],
     "authorization": [
         {
-            "url" : "https://example.com:8080/auth/",
-            "enable" : true
-        }, 
-        {
-            "url": "https://example.com:8080/open",
-            "enable" : false
+            "url": "https://drive.google.com/uc?export=download&id=17fJYOFpEkfTDaAFS96e1_X9JNubsl3t2",
+            "enable": false
         }
     ],
     "contract_management_service": [
         {
-            "url" : "https://example.com:8080/auth/",
-            "enable" : true
-        }, 
-        {
-            "url": "https://example.com:8080/open",
-            "enable" : false
+            "url": "https://drive.google.com/uc?export=download&id=17fJYOFpEkfTDaAFS96e1_X9JNubsl3t2",
+            "enable": false
         }
     ],
     "register_provenance": [
         {
-            "url" : "https://example.com:8080/auth/",
-            "enable" : true
-        }, 
-        {
-            "url": "https://example.com:8080/open",
-            "enable" : false
+            "url": "https://drive.google.com/uc?export=download&id=17fJYOFpEkfTDaAFS96e1_X9JNubsl3t2",
+            "enable": false
         }
     ]
 }

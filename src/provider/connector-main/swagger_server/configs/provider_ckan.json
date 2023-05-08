@@ -1,6 +1,6 @@
 {
     "release_ckan_url": "http://172.26.16.16:5000",
     "detail_ckan_url": "http://172.26.16.16:5000",
-    "authorization": true,
-    "packages_search_for_data_exchange": true
+    "authorization": false,
+    "packages_search_for_data_exchange": false
 }

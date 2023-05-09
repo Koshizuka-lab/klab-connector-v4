@@ -13,7 +13,7 @@ else
     # 全コンテナを起動
     # docker compose -f docker-compose.yml up -d
     # デタッチしない
-    docker compose -f docker-compose.yml up -d
+    docker compose -f docker-compose.yml up
     docker compose ps
 
 fi

@@ -1,7 +1,7 @@
 {
     "connector_location": {
         "test_provider_id": {
-            "provider_connector_url": "http://172.26.16.16"
+            "provider_connector_url": "http://172.26.16.16:38080"
         }
     }
 }

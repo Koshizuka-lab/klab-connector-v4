@@ -9,7 +9,7 @@
     "authorization": [
         {
             "url": "https://drive.google.com/uc?export=download&id=17fJYOFpEkfTDaAFS96e1_X9JNubsl3t2",
-            "enable": false
+            "enable": true
         }
     ],
     "contract_management_service": [

@@ -1,6 +1,6 @@
 {
-    "provider_id" : "test_provider_id",
-    "provider_connector_id" : "test_provider_connector_id",
-    "provider_connector_secret" : "test_provider_connector_secret",
-    "trace_log_enable" : true
+    "provider_id" : "provider1",
+    "provider_connector_id" : "provider1_connector",
+    "provider_connector_secret" : "cGyKcY2l2EINHa4bT1xQm57OqNuU1QLP",
+    "trace_log_enable" : false
 }

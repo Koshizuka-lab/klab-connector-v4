@@ -1,6 +1,6 @@
 {
-    "consumer_connector_id" : "test_consumer_connector_id",
-    "consumer_connector_secret" : "test_consumer_connector_secret",
+    "consumer_connector_id" : "consumer1_connector",
+    "consumer_connector_secret" : "mt125Q0CvHa1AyiJ5f03AjDwnMTfJhn7",
     "location_service_url" : "https://testexample.com",
-    "trace_log_enable" : true
+    "trace_log_enable" : false
 }

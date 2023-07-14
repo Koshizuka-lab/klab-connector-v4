@@ -3,6 +3,7 @@
 *.crt
 *.key
 *.pem
+openssl.cnf
 
 # 利用者コネクタプロキシ関係
 src/consumer/squid/volumes/ssl_db/*

@@ -1,7 +1,7 @@
 {
     "connector_location": {
         "provider1": {
-            "provider_connector_url": "http://172.26.16.16:80"
+            "provider_connector_url": "https://cadde.provider1.com"
         }
     }
 }

@@ -3,8 +3,8 @@
   "client_id": "provider1_authz",
   "client_secret": "qUcsIDg1WtPzmNAMKWernRxgtNHtSbUB",
   "authz_keycloak_url": "http://172.26.16.16:5080/keycloak",
-  "authn_url": "http://172.26.16.20:18080",
-  "authn_keycloak_url": "http://172.26.16.20:18080/keycloak",
+  "authn_url": "https://authn.ut-cadde.jp:18443/cadde/api/v4",
+  "authn_keycloak_url": "https://authn.ut-cadde.jp:18443/keycloak",
   "authn_realm_name": "authentication",
   "subject_issuer": "authentication"
 }

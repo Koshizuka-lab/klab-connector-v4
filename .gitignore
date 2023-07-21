@@ -3,6 +3,8 @@
 *.crt
 *.key
 *.pem
+*.jks
+*.p12
 openssl.cnf
 
 # 利用者コネクタプロキシ関係

@@ -1,1 +1,1 @@
-{ "realm": "provider1", "client": "provider1_connector", "identity_provider": "http://172.26.16.20:18080/keycloak" }
+{ "realm": "provider1", "client": "provider1_connector", "identity_provider": "https://authn.ut-cadde.jp:18443/keycloak" }

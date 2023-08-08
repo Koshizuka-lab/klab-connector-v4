@@ -18,3 +18,10 @@ dir内にcadde_output.txtというファイルが生成され、
 hello, data space!
 ```
 と中身に書いてあれば成功
+
+## 各シェルスクリプトファイルについて
+- `.env`: アクセス先URLやAPIエンドポイント, ルート証明書の位置など各シェルスクリプトで共通で使用する変数をまとめたファイル
+- `user_authentication.sh`: CADDE利用者認証機能の検証用スクリプト
+- `catalog_search_meta.sh`: 横断検索機能の検証用スクリプト
+- `catalog_search_detail.sh`: 詳細検索機能の検証用スクリプト
+- `data_exchange_http.sh`: HTTPによるファイル交換機能の検証用スクリプト

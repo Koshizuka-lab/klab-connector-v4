@@ -12,12 +12,15 @@ services:
     image: nginx:1.23.1
     container_name: authz_nginx
     ports:
-      - "80:80" # must change
+      - "0.0.0.0:5080:80" # must change
     volumes:
       - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro"
       - "./nginx/public:/var/www/public"
       - "/etc/localtime:/etc/localtime:ro"
+    networks:
+      - provider_default
+      - default
     restart: always
 
   fastapi:
@@ -30,6 +33,11 @@ services:
       - "./settings.json/:/settings/settings.json"
       - "./settings_provider_setup.json/:/settings/settings_provider_setup.json"
       - "./docker-compose.yaml:/settings/docker-compose.yaml"
+      - "./certs/cacert.pem:/etc/docker/certs.d/cacert.pem:ro"
+    environment:
+      - REQUESTS_CA_BUNDLE=/etc/docker/certs.d/cacert.pem
+    extra_hosts:
+      - "authn.ut-cadde.jp:172.26.16.20"
     command: 'python -m uvicorn main:app --reload --host 0.0.0.0'
     restart: always
 
@@ -37,17 +45,25 @@ services:
     image: prebuilt_keycloak:19.0.2
     build: ./keycloak
     container_name: authz_keycloak
+    volumes:
+      - "./certs/kcTrustStore.p12:/opt/keycloak/kcTrustStore.p12:ro"
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN} # must change
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD} # must change
+      KEYCLOAK_ADMIN: admin # must change
+      KEYCLOAK_ADMIN_PASSWORD: admin # must change
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres/keycloak
-      KC_DB_USERNAME: ${KC_DB_USERNAME} # must change
-      KC_DB_PASSWORD: ${KC_DB_PASSWORD} # must change
+      KC_DB_USERNAME: keycloak_db_user # must change
+      KC_DB_PASSWORD: password # must change
       KC_HTTP_RELATIVE_PATH: "/keycloak"
       KC_FEATURES_DISABLED: admin2
       KC_PROXY: "edge"
       JAVA_OPTS_APPEND: "-Dkeycloak.profile=preview -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.profile.feature.token_exchange=enabled -Dkeycloak.profile.feature.authz_drools_policy=enabled -Dkeycloak.profile.feature.admin_fine_grained_authz=enabled"
+      KC_SPI_TRUSTSTORE_FILE_FILE: kcTrustStore.p12
+      KC_SPI_TRUSTSTORE_FILE_PASSWORD: koshizukalab
+      KC_SPI_TRUSTSTORE_FILE_HOSTNAME_VERIFICATION_POLICY: WILDCARD
+      KC_SPI_TRUSTSTORE_FILE_TYPE: pkcs12
+    extra_hosts:
+      - "authn.ut-cadde.jp:172.26.16.20"
     depends_on:
       - postgres
     command: start-dev
@@ -58,8 +74,8 @@ services:
     container_name: authz_postgres
     environment:
       POSTGRES_DB: keycloak
-      POSTGRES_USER: ${POSTGRES_USER} # must change
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # must change
+      POSTGRES_USER: keycloak_db_user # must change
+      POSTGRES_PASSWORD: password # must change
     volumes:
       - keycloak_volume:/var/lib/postgresql/data
     restart: always

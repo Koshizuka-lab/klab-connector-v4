@@ -104,6 +104,9 @@ services:
       - ./squid/volumes/ssl:/etc/squid/ssl
       - ./squid/volumes/ssl_db:/var/lib/squid/ssl_db
     restart: always
+    extra_hosts:
+      - "cadde.provider1.com:172.26.16.16"
+      - "authn.ut-cadde.jp:172.26.16.20"
   consumer-reverse-proxy:
     container_name: consumer_reverse-proxy
     image: nginx:1.23.1

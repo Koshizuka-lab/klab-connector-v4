@@ -1,6 +1,6 @@
 {
-    "consumer_connector_id" : "consumer1_connector",
-    "consumer_connector_secret" : "mt125Q0CvHa1AyiJ5f03AjDwnMTfJhn7",
+    "consumer_connector_id" : "matsunaga_consumer_connector",
+    "consumer_connector_secret" : "HXCl3chqz8Ir4hd6jVhdPoiICa46ubfb",
     "location_service_url" : "https://testexample.com",
     "trace_log_enable" : false
 }

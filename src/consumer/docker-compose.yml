@@ -107,6 +107,7 @@ services:
     extra_hosts:
       - "cadde.provider1.com:172.26.16.16"
       - "authn.ut-cadde.jp:172.26.16.20"
+      - "cadde.matsunaga.com:host-gateway"
   consumer-reverse-proxy:
     container_name: consumer_reverse-proxy
     image: nginx:1.23.1
@@ -115,6 +116,6 @@ services:
       - ./nginx/volumes/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/volumes/ssl:/etc/nginx/ssl
     ports:
-      - 443:443
-      - 80:80
+      - 10443:443
+      - 10080:80
     restart: always

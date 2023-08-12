@@ -2,6 +2,9 @@
     "connector_location": {
         "provider1": {
             "provider_connector_url": "https://cadde.provider1.com"
+        },
+        "matsunaga": {
+            "provider_connector_url": "https://cadde.matsunaga.com"
         }
     }
 }

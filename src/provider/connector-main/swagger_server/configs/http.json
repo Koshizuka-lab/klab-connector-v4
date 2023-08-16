@@ -8,91 +8,19 @@
     ],
     "authorization": [
         {
-            "url": "https://drive.google.com/uc?export=download&id=17fJYOFpEkfTDaAFS96e1_X9JNubsl3t2",
-            "enable": true
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=14db1a65K8OChTqWxQjdI_TYIbph2F2pU",
-            "enable": true
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=15NswX3BOE8mMKU2u6SBTZlxGhw4Hydc8",
-            "enable": true
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1fUHY_krFkFOViyrRUkqK8dzDvT32qTYh",
-            "enable": true
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1noQ9g6UtoY72w8ZEry7AZ48GC00HaxuX",
-            "enable": true
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1vuPmJtF8x4Ic677f1fwruoBL8B6CGkkC",
-            "enable": true
-        },
-        {
-            "url": "http://172.26.16.20:3080/test.txt",
+            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
             "enable": true
         }
     ],
     "contract_management_service": [
         {
-            "url": "https://drive.google.com/uc?export=download&id=17fJYOFpEkfTDaAFS96e1_X9JNubsl3t2",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=14db1a65K8OChTqWxQjdI_TYIbph2F2pU",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=15NswX3BOE8mMKU2u6SBTZlxGhw4Hydc8",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1fUHY_krFkFOViyrRUkqK8dzDvT32qTYh",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1noQ9g6UtoY72w8ZEry7AZ48GC00HaxuX",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1vuPmJtF8x4Ic677f1fwruoBL8B6CGkkC",
-            "enable": false
-        },
-        {
-            "url": "http://172.26.16.20:3080/test.txt",
+            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
             "enable": false
         }
     ],
     "register_provenance": [
         {
-            "url": "https://drive.google.com/uc?export=download&id=17fJYOFpEkfTDaAFS96e1_X9JNubsl3t2",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=14db1a65K8OChTqWxQjdI_TYIbph2F2pU",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=15NswX3BOE8mMKU2u6SBTZlxGhw4Hydc8",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1fUHY_krFkFOViyrRUkqK8dzDvT32qTYh",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1noQ9g6UtoY72w8ZEry7AZ48GC00HaxuX",
-            "enable": false
-        },
-        {
-            "url": "https://drive.google.com/uc?export=download&id=1vuPmJtF8x4Ic677f1fwruoBL8B6CGkkC",
-            "enable": false
-        },
-        {
-            "url": "http://172.26.16.20:3080/test.txt",
+            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
             "enable": false
         }
     ]

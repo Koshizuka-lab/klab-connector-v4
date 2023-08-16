@@ -1,6 +1,6 @@
 {
-    "provider_id" : "provider1",
-    "provider_connector_id" : "provider1_connector",
-    "provider_connector_secret" : "V8oummPbP4W7eM2w0EoJaEcZxkul14Dz",
+    "provider_id" : "matsunaga",
+    "provider_connector_id" : "matsunaga_provider_connector",
+    "provider_connector_secret" : "yjyyluHrdCvp1qSjZ84dCazBw5mx15SI",
     "trace_log_enable" : false
 }

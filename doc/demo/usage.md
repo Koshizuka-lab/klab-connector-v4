@@ -1,35 +1,55 @@
 # 利用者
 ここでは、利用者コネクタ、提供者コネクタを経由し、HTTPサーバからデータを取得する方法を説明する。
 
-## 利用者の認証
+## 1. 利用者の認証
+### 認証サーバへのアクセス情報を加える
+ここで接続するCADDE認証サーバ`authn.ut-cadde.jp`は独自に定義したドメインであるため、`/etc/hosts`ファイルでIPアドレス（`172.26.16.20`）との対応を書き換えておく必要がある。
+```bash
+sudo vi /etc/hosts
+```
+```
+...
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+# ↓この行を追加する
+172.26.16.20 authn.ut-cadde.jp
+```
+
+### トークン取得APIの実行
 認証サーバの利用者トークン取得エンドポイントに対し、利用者IDやパスワードを指定して認証を行い、CADDE利用者トークンを取得する。CADDE利用者トークンはレスポンスの`access_token`というkeyで返される。利用者トークンの有効期間は5分間に設定しているため注意が必要。
 
 APiの実行例は以下の通り。利用者ID・パスワードとWebAppクライアントID・シークレットをJSON形式で送信する。なお、ここでは認証サーバとHTTPS通信を行うために、認証サーバ証明書のルート証明書である、研究室内プライベート認証局の証明書パスを`curl`コマンドで指定する必要がある。
+
 ```bash
-▶　curl -v -X POST "https://authn.ut-cadde.jp:18443/cadde/api/v4/token" -sS \
+curl -v -X POST "https://authn.ut-cadde.jp:18443/cadde/api/v4/token" -sS \
 -H "Content-Type: application/json" \
 -d '{"user_id": "{利用者ID}", "password": "{利用者パスワード}", "client_id": "consumer1_webapp", "client_secret": "X0IwpZHnuFI8uduRkM5RV5A8F1XJwF3T"}' \
 --cacert {プライベートCA証明書のパス}
+```
+```bash
 ...
 {"access_token":"eyJhb...","refresh_token":"eyJhb..."}
 ```
-## 横断検索
+
+## 2. 横断検索
 利用者コネクタのカタログ検索エンドポイントに対し、接続する利用者コネクタと探したいリソースの検索キーを指定し、カタログ横断検索を行う。検索キーである文字列を指定すると、データセットのタイトルやその文字列をタイトルに含むリソースが含まれるデータセットの情報が返される。
 
 APIの実行例は以下の通り。ここでは横断検索であることをコネクタに伝えるために`x-cadde-search`ヘッダに`meta`という値をセットしている。なお、ここでは利用者コネクタとHTTPS通信を行うために、研究室内プライベート認証局の証明書パスを`curl`コマンドで指定する必要がある。
 ```bash
-▶ curl -v -X GET "https://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?q={検索キー}" -sS \
+curl -v -X GET "https://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?q={検索キー}" -sS \
 -H "Cache-Control: no-cache" \
 -H "x-cadde-search: meta" \
 --cacert {プライベートCA証明書のパス}
 ```
 
-## 詳細検索
+## 3. 詳細検索
 利用者コネクタのカタログ検索エンドポイントに対し、接続する利用者コネクタと検索したいデータセットのIDをURL内に指定し、さらに提供者IDとCADDE利用者トークンをHTTPヘッダに付与して、提供者が管理する詳細検索用カタログサイトで詳細検索を行う。詳細検索の結果、IDが一致するデータセットの情報が返される。
 
 APIの実行例は以下の通り。ここでは横断検索であることをコネクタに伝えるために`x-cadde-search`ヘッダに`detail`という値を指定し、また`x-cadde-provider`ヘッダに提供者IDを指定する。`Authorization`ヘッダには利用者認証で取得した利用者トークンをセットする。なお、ここでは利用者コネクタとHTTPS通信を行うために、研究室内プライベート認証局の証明書パスを`curl`コマンドで指定する必要がある。
 ```bash
-▶ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?fq=caddec_dataset_id_for_detail:{詳細検索用データセットID}' -sS \
+curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?fq=caddec_dataset_id_for_detail:{詳細検索用データセットID}' -sS \
 -H "Cache-Control: no-cache" \
 -H "x-cadde-search: detail" \
 -H "x-cadde-provider: {提供者ID}" \
@@ -37,12 +57,12 @@ APIの実行例は以下の通り。ここでは横断検索であることを�
 --cacert {プライベートCA証明書のパス}
 ```
 
-## データ取得
+## 4. データ取得
 詳細検索で得たカタログ情報を元に、利用者コネクタのデータ取得APIに対し、データURLや提供者ID、利用者トークンをHTTPヘッダに付与して、提供者が管理するHTTPサーバからデータファイルを取得する。
 
 APIの実行例は以下の通り。ここではHTTPサーバからのデータ取得であることを示すため`x-cadde-resource-api-type`ヘッダに`file/http`という値を指定する。`x-cadde-resource-url`にはデータURL、`x-cadde-provider`ヘッダに提供者ID、`Authorization`ヘッダには利用者認証で取得した利用者トークンをセットする。また、`curl`コマンドの`-o`オプションで取得したデータをファイルに出力できる。なお、ここでは利用者コネクタとHTTPS通信を行うために、研究室内プライベート認証局の証明書パスを指定する必要がある。
 ```bash
-▶ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/file" -sS \
+curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/file" -sS \
 -H "Cache-Control: no-cache" \
 -H "x-cadde-resource-url: {データURL}" \
 -H "x-cadde-resource-api-type: file/http" \
@@ -55,13 +75,13 @@ APIの実行例は以下の通り。ここではHTTPサーバからのデータ�
 
 # 提供者
 ここでは、コネクタを経由してデータを提供するために、提供者が事前に準備する必要のある項目について説明する。
-## CKANでのデータカタログ登録
+## 1. CKANでのデータカタログ登録
 詳細検索用カタログサイト、横断検索カタログサイトそれぞれにカタログ情報を登録する。
 
 研究室内UT-CADDEでは2023年8月21日現在、実装の都合上、詳細検索・横断検索で同一のカタログサイト（[172.26.16.16:5000](172.26.16.16:5000)）を用いているため、以下では当該サイトでのカタログ情報の登録方法を説明する。
 
 
-## 提供者コネクタのデータ管理コンフィグ設定
+## 2. 提供者コネクタのデータ管理コンフィグ設定
 提供者コネクタからアクセス可能なHTTPサーバのURLをコンフィグファイル`connector-main/swagger_server/configs/http.json`で設定する。
 ```json
 "authorization": [
@@ -83,7 +103,7 @@ APIの実行例は以下の通り。ここではHTTPサーバからのデータ�
     }
 ]
 ```
-## 認可登録
+## 3. 認可登録
 データに対する認可登録をGUIで行う方法を説明する。
 
 まず、ブラウザのアドレスバーに構築した認可機能のURLを入力してアクセスする。

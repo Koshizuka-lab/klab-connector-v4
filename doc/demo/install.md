@@ -3,12 +3,13 @@
 
 ### 1.1.1. 利用者コネクタ取得
 ```bash
-git clone github:Koshizuka-lab/klab-connector-v4.git
+git clone git@github.com:Koshizuka-lab/klab-connector-v4.git
 cd klab-connector-v4
 git checkout -b demo origin/demo
 git branch -l
 ```
-```
+```bash
+# output
 * demo
   master
 ```
@@ -172,7 +173,8 @@ Common Name (e.g. server FQDN or YOUR name) []: cadde.<userID>.com
 ```bash
 cat ../default.conf | grep ssl_certificate
 ```
-```
+```bash
+# output
     ssl_certificate /etc/nginx/ssl/server.crt;
     ssl_certificate_key /etc/nginx/ssl/server.key;
 ```
@@ -233,7 +235,8 @@ Email Address []:
 ```bash
 cat ../squid.conf | grep tls_outgoing_options
 ```
-```
+```bash
+# output
 tls_outgoing_options cert=/etc/squid/ssl/client.crt key=/etc/squid/ssl/client.key
 ```
 
@@ -247,18 +250,20 @@ docker compose -f docker-compose_initial.yml up -d --build
 ```bash
 docker compose -f docker-compose_initial.yml ps
 ```
-```
+```bash
+# output
 NAME                IMAGE               COMMAND                  SERVICE             CREATED             STATUS              PORTS
 forward-proxy       cadde-squid:4.0.0   "/usr/sbin/squid '-N…"   squid               44 seconds ago      Up 43 seconds       0.0.0.0:3128->3128/tcp, :::3128->3128/tcp
 ```
 
 #### 1.1.5.5. SSL Bump設定
 プロキシ用コンテナを起動させたら以下のコマンドを実行して、SSL Bump用の設定を行う。
-```
+```bash
 # プロキシのSSL Bump設定
 docker exec -it forward-proxy /usr/lib/squid/security_file_certgen -c -s /var/lib/squid/ssl_db -M 20MB
 ```
-```
+```bash
+# output
 Initialization SSL db...
 Done
 ```
@@ -267,7 +272,8 @@ Done
 # プロキシコンテナ内の`ssl_db`ディレクトリをホストにコピー
 docker cp forward-proxy:/var/lib/squid/ssl_db ./volumes/
 ```
-```
+```bash
+# output
 Successfully copied 3.58kB to /Users/mitk/klab-connector-v4/src/consumer/squid/volumes/
 ```
 
@@ -275,7 +281,8 @@ Successfully copied 3.58kB to /Users/mitk/klab-connector-v4/src/consumer/squid/v
 # 立ち上げたプロキシコンテナを一旦終了
 docker compose -f docker-compose_initial.yml down
 ```
-```
+```bash
+# output
 [+] Running 2/2
  ✔ Container forward-proxy  Removed
  ✔ Network squid_default    Removed
@@ -383,10 +390,9 @@ sh setup.sh
 | contract_management_service | 取引市場利用設定. リクエストされたURLが設定されていなければTrueとして動作 |
 | register_provenance | 来歴登録設定情報. リクエストされたURLが設定されていなければTrueとして動作 |
 
-**デモにあたっては、`authorization`, `contract_management_service`, `register_provenance`以下に提供したいリソースのURLを追加する。**
+**デモにあたっては、`authorization`, `contract_management_service`, `register_provenance`以下に提供したいリソースのURLを追加する。`basic_auth`は変更の必要なし。**
 
 ```json:http.json
-cat connector-main/swagger_server/configs/http.json
 {
     "basic_auth": [
         {
@@ -431,7 +437,7 @@ cat connector-main/swagger_server/configs/http.json
 そこで、下の例では認可機能のアクセスURLに適当なドメイン名を指定し、後に示す`docker-compose.yml`でドメイン名を解決する設定を行うことを想定している。
 ```json:authorization.json
 {
-     "authorization_server_url": "http://authz.cadde.example.com:5080"
+     "authorization_server_url": "http://authz.cadde.<userID>.com:5080"
 }
 ```
 
@@ -470,7 +476,7 @@ services:
   provider-authorization:
     ...
     extra_hosts:
-      - "authz.cadde.example.com:host-gateway"
+      - "authz.cadde.<userID>.com:host-gateway"
 ```
 
 ### 2.1.4. リバースプロキシの設定
@@ -537,11 +543,13 @@ sh start.sh
 ```
 
 起動した提供者コネクタの構成は以下の通り。
-![提供者コネクタ構成](https://github.com/CADDE-sip/connector/blob/222f7a88e987dbe17f47d103916d21c35e855349/doc/png/system.png?raw=true)
+![提供者コネクタ構成](../png/producer.png)
 
 ### 2.2.2. 提供者コネクタ起動確認
 ```bash
 docker compose ps
+```
+```
 NAME                             IMAGE                                  COMMAND                  SERVICE                          CREATED             STATUS              PORTS
 provider_authorization           provider/authorization:4.0.0           "python3 -m swagger_…"   provider-authorization           11 seconds ago      Up 9 seconds        8080/tcp
 provider_catalog_search          provider/catalog-search:4.0.0          "python3 -m swagger_…"   provider-catalog-search          11 seconds ago      Up 10 seconds       8080/tcp
@@ -553,7 +561,7 @@ provider_reverse-proxy           nginx:1.23.1                           "/docker
 
 提供者コネクタが起動できれば、[usage.mdに記載された提供者コネクタの使い方](./usage.md#提供者)を参考に、データ提供のための準備を行う。
 
-### 2.2.3. 提供者コネクタ停止
+### 2.2.3. (提供者コネクタ停止)
 ```
 sh stop.sh
 ```
@@ -570,6 +578,9 @@ cd ~/klab-connector-v4/misc/authorization
 
 ### 3.1.1. コンフィグファイルの設定
 #### docker-compose.yaml
+
+**以下、デモにあたっては変更の必要なし**
+
 `misc/authorization/docker-compose.yaml`
 認可機能用Dockerコンテナ群を起動するための設定ファイル。
 
@@ -599,15 +610,15 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       ...
-      KC_DB_USERNAME: keycloak_db_user # must change
-      KC_DB_PASSWORD: password # must change
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
       ...
   postgres:
     ...
     environment:
       ...
-      POSTGRES_USER: keycloak_db_user # must change
-      POSTGRES_PASSWORD: password # must change
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
       ...
 ```
 
@@ -732,7 +743,8 @@ authz_postgres      postgres:14.4              "docker-entrypoint.s…"   postgr
 ```bash
 bash ./provider_setup.sh
 ```
-```
+```bash
+# output
 CADDEユーザID: <提供者ID>
 提供者コネクタのクライアントID: <提供者コネクタ クライアントID>
 CADDE認証機能認証サーバのURL: https://authn.ut-cadde.jp:18443/keycloak
@@ -780,7 +792,7 @@ Token Exchangeに関わるパーミッションを設定しました
 { "realm": "<提供者ID>", "client": "<提供者コネクタ クライアントID>", "identity_provider": "https://authn.ut-cadde.jp:18443/keycloak" }
 ```
 
-### 3.2.4. 認可機能停止
+### 3.2.4. (認可機能停止)
 ```bash
 ./stop.sh
 ```

@@ -263,16 +263,16 @@ Initialization SSL db...
 Done
 ```
 
-# プロキシコンテナ内の`ssl_db`ディレクトリをホストにコピー
 ```bash
+# プロキシコンテナ内の`ssl_db`ディレクトリをホストにコピー
 docker cp forward-proxy:/var/lib/squid/ssl_db ./volumes/
 ```
 ```
 Successfully copied 3.58kB to /Users/mitk/klab-connector-v4/src/consumer/squid/volumes/
 ```
 
+```
 # 立ち上げたプロキシコンテナを一旦終了
-``
 docker compose -f docker-compose_initial.yml down
 ```
 ```

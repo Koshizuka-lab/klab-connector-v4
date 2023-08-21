@@ -282,6 +282,8 @@ consumer_provenance_management   consumer/provenance-management:4.0.0   "python3
 consumer_reverse-proxy           nginx:1.23.1                           "/docker-entrypoint.…"   consumer-reverse-proxy           2 minutes ago       Up 2 minutes        0.0.0.0:10080->80/tcp, :::10080->80/tcp, 0.0.0.0:10443->443/tcp, :::10443->443/tcp
 ```
 
+利用者コネクタが起動できれば、[usage.mdに記載された利用者コネクタの使い方](./usage.md#利用者)を参考にCADDEを利用する。
+
 ### 1.2.3. 利用者コネクタ停止
 ```
 ▶ sh stop.sh
@@ -518,6 +520,8 @@ provider_data_exchange           provider/data-exchange:4.0.0           "python3
 provider_provenance_management   provider/provenance-management:4.0.0   "python3 -m swagger_…"   provider-provenance-management   11 seconds ago      Up 10 seconds       8080/tcp
 provider_reverse-proxy           nginx:1.23.1                           "/docker-entrypoint.…"   provider-reverse-proxy           11 seconds ago      Up 9 seconds        0.0.0.0:80->80/tcp, :::80->80/tcp, 0.0.0.0:443->443/tcp, :::443->443/tcp
 ```
+
+提供者コネクタが起動できれば、[usage.mdに記載された提供者コネクタの使い方](./usage.md#提供者)を参考に、データ提供のための準備を行う。
 
 ### 2.2.3. 提供者コネクタ停止
 ```

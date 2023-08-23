@@ -20,7 +20,7 @@ sudo vi /etc/hosts
 ### トークン取得APIの実行
 認証サーバの利用者トークン取得エンドポイントに対し、利用者IDやパスワードを指定して認証を行い、CADDE利用者トークンを取得する。CADDE利用者トークンはレスポンスの`access_token`というkeyで返される。利用者トークンの有効期間は5分間に設定しているため注意が必要。
 
-APiの実行例は以下の通り。利用者ID・パスワードとWebAppクライアントID・シークレットをJSON形式で送信する。なお、ここでは認証サーバとHTTPS通信を行うために、認証サーバ証明書のルート証明書である、研究室内プライベート認証局の証明書パスを`curl`コマンドで指定する必要がある。
+APIの実行例は以下の通り。利用者ID・パスワードとWebAppクライアントID・シークレットをJSON形式で送信する。なお、ここでは認証サーバとHTTPS通信を行うために、認証サーバ証明書のルート証明書である、研究室内プライベート認証局の証明書パスを`curl`コマンドで指定する必要がある。
 
 ```bash
 curl -v -X POST "https://authn.ut-cadde.jp:18443/cadde/api/v4/token" -sS \
@@ -49,7 +49,7 @@ curl -v -X GET "https://{利用者コネクタのFQDN}:{ポート番号}/cadde/a
 
 APIの実行例は以下の通り。ここでは横断検索であることをコネクタに伝えるために`x-cadde-search`ヘッダに`detail`という値を指定し、また`x-cadde-provider`ヘッダに提供者IDを指定する。`Authorization`ヘッダには利用者認証で取得した利用者トークンをセットする。なお、ここでは利用者コネクタとHTTPS通信を行うために、研究室内プライベート認証局の証明書パスを`curl`コマンドで指定する必要がある。
 ```bash
-curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?fq=caddec_dataset_id_for_detail:{詳細検索用データセットID}' -sS \
+curl -v -X GET 'https://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?fq=caddec_dataset_id_for_detail:{詳細検索用データセットID}' -sS \
 -H "Cache-Control: no-cache" \
 -H "x-cadde-search: detail" \
 -H "x-cadde-provider: {提供者ID}" \
@@ -62,7 +62,7 @@ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/cadde/ap
 
 APIの実行例は以下の通り。ここではHTTPサーバからのデータ取得であることを示すため`x-cadde-resource-api-type`ヘッダに`file/http`という値を指定する。`x-cadde-resource-url`にはデータURL、`x-cadde-provider`ヘッダに提供者ID、`Authorization`ヘッダには利用者認証で取得した利用者トークンをセットする。また、`curl`コマンドの`-o`オプションで取得したデータをファイルに出力できる。なお、ここでは利用者コネクタとHTTPS通信を行うために、研究室内プライベート認証局の証明書パスを指定する必要がある。
 ```bash
-curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/file" -sS \
+curl -v -X GET "https://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/file" -sS \
 -H "Cache-Control: no-cache" \
 -H "x-cadde-resource-url: {データURL}" \
 -H "x-cadde-resource-api-type: file/http" \
@@ -78,7 +78,7 @@ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/ap
 ## 1. CKANでのデータカタログ登録
 詳細検索用カタログサイト、横断検索カタログサイトそれぞれにカタログ情報を登録する。
 
-研究室内UT-CADDEでは2023年8月21日現在、実装の都合上、詳細検索・横断検索で同一のカタログサイト（[172.26.16.16:5000](172.26.16.16:5000)）を用いているため、以下では当該サイトでのカタログ情報の登録方法を説明する。
+研究室内UT-CADDEでは2023年8月21日現在、実装の都合上、詳細検索・横断検索で同一のカタログサイト（[172.26.16.16:5000](172.26.16.16:5000)）を用いているため、当該サイトで一括してカタログ情報を登録する。
 
 
 ## 2. 提供者コネクタのデータ管理コンフィグ設定

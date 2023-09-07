@@ -8,19 +8,31 @@
     ],
     "authorization": [
         {
-            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
+            "url": "<リソースURL1>",
+            "enable": true
+        },
+        {
+            "url": "<リソースURL2>",
             "enable": true
         }
     ],
     "contract_management_service": [
         {
-            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
+            "url": "<リソースURL1>",
+            "enable": false
+        },
+        {
+            "url": "<リソースURL2>",
             "enable": false
         }
     ],
     "register_provenance": [
         {
-            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
+            "url": "<リソースURL1>",
+            "enable": false
+        },
+        {
+            "url": "<リソースURL2>",
             "enable": false
         }
     ]

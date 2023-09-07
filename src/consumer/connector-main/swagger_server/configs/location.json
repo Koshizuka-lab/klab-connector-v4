@@ -3,8 +3,8 @@
         "provider1": {
             "provider_connector_url": "https://cadde.provider1.com"
         },
-        "matsunaga": {
-            "provider_connector_url": "https://cadde.matsunaga.com"
+        "<提供者ID>": {
+            "provider_connector_url": "<提供者コネクタのアクセスURL>"
         }
     }
 }

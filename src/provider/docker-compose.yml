@@ -65,7 +65,7 @@ services:
     environment:
       - "LC_CTYPE=C.UTF-8"
     extra_hosts:
-      - "authz.cadde.matsunaga.com:host-gateway"
+      - "<認可機能ドメイン>:host-gateway" # must change
   provider-provenance-management:
     build: provenance-management
     image: provider/provenance-management:4.0.0

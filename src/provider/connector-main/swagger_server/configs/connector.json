@@ -1,6 +1,6 @@
 {
-    "provider_id" : "matsunaga",
-    "provider_connector_id" : "matsunaga_provider_connector",
-    "provider_connector_secret" : "yjyyluHrdCvp1qSjZ84dCazBw5mx15SI",
+    "provider_id" : "<提供者ID>",
+    "provider_connector_id" : "<提供者コネクタ クライアントID>",
+    "provider_connector_secret" : "<提供者コネクタ クライアントシークレット>",
     "trace_log_enable" : false
 }

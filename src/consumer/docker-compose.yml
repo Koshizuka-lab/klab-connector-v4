@@ -107,7 +107,7 @@ services:
     extra_hosts:
       - "cadde.provider1.com:172.26.16.16"
       - "authn.ut-cadde.jp:172.26.16.20"
-      - "cadde.matsunaga.com:host-gateway"
+      - "<提供者コネクタURL>:host-gateway" # must change
   consumer-reverse-proxy:
     container_name: consumer_reverse-proxy
     image: nginx:1.23.1

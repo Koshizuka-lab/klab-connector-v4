@@ -2,6 +2,9 @@
 ## 1.1 利用者コネクタ構築手順
 
 ### 1.1.1. 利用者コネクタ取得
+越塚研GitHubからCADDEコネクタ用リポジトリをSSHでクローンする。リポジトリのクローン後、コネクタ構築デモ用のブランチ`demo`に切り替える。
+
+※ GitHubとのSSH接続設定をすでに行っていることを前提とする。
 ```bash
 git clone git@github.com:Koshizuka-lab/klab-connector-v4.git
 cd klab-connector-v4
@@ -15,12 +18,14 @@ git branch -l
 ```
 
 ### 1.1.2. 共通ファイルの展開
+`klab-connector-v4`ディレクトリ直下で、利用者コネクタ用ディレクトリ`src/consumer`に移動し、`setup.sh`を実行する。
 ```bash
 cd src/consumer/
 sh setup.sh
 ```
 
 ### 1.1.3. コンフィグファイルの設定
+設定すべきコンフィグファイルの一覧は以下の通り。
 
 | コンフィグファイル | 概要 |
 | :------------  | :----- |
@@ -31,41 +36,41 @@ sh setup.sh
 | docker-compose.yml | 提供者コネクタURLのマッピング + 利用者コネクタ用アクセスポートの設定 |
 | requirements.txt | PyYAMLライブラリのバージョン指定 | 
 
----
-
 #### location.json: 提供者コネクタのURL設定
-パス: `connector-main/swagger_server/configs/location.json`
+パス: `src/consumer/connector-main/swagger_server/configs/location.json`
 
-| 設定パラメータ                     | 概要                                  |
-| :------------------------------ | :----------------------------------- |
-| connector_location              | 提供者IDとコネクタURLのマッピング           |
-| connector_location.<提供者ID>             | CADDEユーザID(提供者) を記載する          |
-| connector_location.<提供者ID>.provider_connector_url          | 提供者コネクタのアクセスURL                |
+| 設定パラメータ | 概要 |
+| :--------- | :------- |
+| connector_location | 提供者IDとコネクタURLのマッピング |
+| connector_location.<提供者ID> | CADDEユーザID(提供者) を記載する |
+| connector_location.<提供者ID>.provider_connector_url | 提供者コネクタのアクセスURL |
+
+CADDE構築デモでは、利用者コネクタと提供者コネクタを同一のローカルマシン上に構築するため、ここでは提供者コネクタのアクセスURL（ドメイン）を適当に設定しておき、Dockerを用いてローカルマシンのIPアドレスに解決させる。例えば、提供者コネクタURLを`cadde.<提供者ID>.com`というように指定可能。
 
 ```json:location.json
 {
     "connector_location": {
         "提供者ID": {
-            "provider_connector_url": "提供者コネクタのアクセスURL"
+            "provider_connector_url": "<提供者コネクタURL>"
         }
     }
 }
 ```
 
 #### connector.json: 利用者コネクタ設定
-パス: `connector-main/swagger_server/configs/connector.json`
+パス: `src/consumer/connector-main/swagger_server/configs/connector.json`
 
-| 設定パラメータ                     | 概要                                  |
-| :------------------------------ | :----------------------------------- |
+| 設定パラメータ | 概要 |
+| :--------- | :------- |
 | consumer_connector_id | **認証**機能発行の利用者コネクタのクライアントID |
 | consumer_connector_secret | **認証**機能発行の利用者コネクタのクライアントシークレット |
-| location_service_url | ロケーションサービスのアクセスURL |
-| trace_log_enable | コネクタの詳細ログ出力有無（出力無の設定でも基本的な動作ログは出力される） |
+| location_service_url | **[変更の必要無し]** ロケーションサービスのアクセスURL |
+| trace_log_enable | **[変更の必要無し]** コネクタの詳細ログ出力有無（出力無の設定でも基本的な動作ログは出力される） |
   
 ```json:connector.json
 {
-    "consumer_connector_id" : "利用者コネクタ クライアントID",
-    "consumer_connector_secret" : "利用者コネクタ クライアントシークレット",
+    "consumer_connector_id" : "<利用者コネクタ クライアントID>",
+    "consumer_connector_secret" : "<利用者コネクタ クライアントシークレット>",
     "location_service_url" : "https://testexample.com",
     "trace_log_enable" : false
 }
@@ -74,12 +79,12 @@ sh setup.sh
 #### ngsi.json: **未対応**
 
 #### public_ckan.json: 横断検索サーバURL設定
-パス: `catalog-search/swagger_server/configs/public_ckan.json`
+パス: `src/consumer/catalog-search/swagger_server/configs/public_ckan.json`
 
 <span style="color: orange;">**以下、デモにあたっては変更の必要なし**</span>
 
-| 設定パラメータ                     | 概要                                  |
-| :------------------------------ | :----------------------------------- |
+| 設定パラメータ | 概要 |
+| :---------- | :---- |
 | public_ckan_url | 横断検索サーバURL |
 
 ```json:public_ckan.json
@@ -90,12 +95,12 @@ sh setup.sh
 
 #### docker-compose.yml: 提供者コネクタURLのマッピング + 利用者コネクタ用アクセスポートの設定
 ##### 提供者コネクタURLのマッピング
-アクセスする提供者コネクタがグローバルに公開されていない場合、上の`location.json`に記入した提供者コネクタのドメインをIPアドレスにマッピングする必要がある。
+CADDE構築デモでは、提供者コネクタをローカルマシンに構築するため、上の`location.json`に記入した提供者コネクタのドメインをIPアドレスにマッピングする必要がある。
 
 利用者環境におけるドメインの名前解決はすべてフォワードプロキシ上で行われるため、`docker-compose.yml`内のフォワードプロキシに対応するコンテナの箇所で、ドメインの割り当てを追加する。
-下の例では、`cadde.provider1.com`, `authn.ut-cadde.jp`というドメインに加えて、`cadde.example.com`という提供者コネクタURLに対して`host-gateway`を割り当てている。
+下の例では、`location.json`に記入した提供者コネクタのドメインに対して`host-gateway`を割り当てている。
 
-`host-gateway`と指定しておくと、Dockerが自動的にホストのIPアドレスに変換する。これは同一ホスト上で利用者コネクタ・提供者コネクタのコンテナをそれぞれ立てている場合に必要である。利用者コネクタのコンテナから一度ホストのIPアドレスにアクセスし、ポートフォワードにより提供者コネクタにアクセスするために設定している。
+`host-gateway`と指定しておくと、Dockerが自動的にホストのIPアドレスに変換する。利用者コネクタのコンテナから一度ホストのIPアドレスにアクセスし、ポートフォワードにより提供者コネクタにアクセスするために設定している。
 
 ```yaml:docker-compose.yml
 services:
@@ -105,7 +110,7 @@ services:
     extra_hosts:
       - "cadde.provider1.com:172.26.16.16"
       - "authn.ut-cadde.jp:172.26.16.20"
-      - "cadde.example.com:host-gateway"
+      - "<提供者コネクタURL>:host-gateway"
 ```
 
 ##### 利用者コネクタ用アクセスポートの設定
@@ -135,41 +140,28 @@ services:
 
 #### 1.1.4.1. 秘密鍵・証明書の準備
 
-`nginx/volumes`以下に秘密鍵やクライアント証明書を配置するための`ssl`ディレクトリを作成する。これはリバースプロキシ用のDockerコンテナにバインドマウントされる。
+`src/consumer`直下で以下のコマンドを実行し、`nginx/volumes`以下に秘密鍵やクライアント証明書を配置するための`ssl`ディレクトリを作成する。これはリバースプロキシ用のDockerコンテナにバインドマウントされる。
 ```bash
 cd ./nginx/volumes
 mkdir ssl
 cd ssl
 ```
+以下に、サーバ証明書の作成手続きにおける注意点を示す。
+- 秘密鍵・CSR・サーバ証明書のファイル名はそれぞれ`server.key`, `server.csr`, `server.crt`としておく。
+- CSR作成時に記入するサーバ識別名情報のうちCommon Nameに関しては、利用者コネクタのドメインを指定する。CADDE構築デモでは、利用者コネクタと提供者コネクタを同一のローカルマシンに立ち上げるため、上の`location.json`で指定した提供者コネクタのドメインと利用者コネクタのドメインを一致させて指定することを推奨する。
+- Common Name以外のサーバ識別名情報はEnterでスキップしても構わない。
 
-秘密鍵・クライアント証明書の具体的な作成方法は[certificate.md](./certificate.md)を参照。
 
-ここで作成する秘密鍵・クライアント証明書のファイル名はそれぞれ`server.key`, `server.crt`としておく。
-
-また、CSR作成時に記入するサーバ識別名情報について、Common Name以外はEnterでスキップして構わない。
-Common Nameについて、このデモでは利用者コネクタと提供者コネクタを立ち上げることを前提とし、提供者コネクタのリバースプロキシの設定を鑑みて、`location.json`で指定した提供者コネクタURLに一致させる形で指定することを推奨する。
-
-以下に、CADDE利用者コネクタのサーバ証明書用CSRの一例を示す。
-```bash
-openssl req -new -key ./server.key -out ./server.csr -addext "subjectAltName = DNS:cadde.<userID>.com,DNS:localhost,IP:127.0.0.1"
-```
-```
-...
-Country Name (2 letter code) [AU]: JP
-State or Province Name (full name) [Some-State]: Tokyo
-Locality Name (eg, city) []: Bunkyo
-Organization Name (eg, company) [Internet Widgits Pty Ltd]: Koshizuka Lab
-Organizational Unit Name (eg, section) []:
-Common Name (e.g. server FQDN or YOUR name) []: cadde.<userID>.com
-```
-なお、上の例では、ローカルホスト上に立ち上げた利用者コネクタに`localhost`というドメインやIPアドレスでアクセスできるよう、SubjectAltNameを設定している。
+秘密鍵・サーバ証明書の具体的な作成方法は[certificate.md](./certificate.md)を参照。
 
 #### 1.1.4.2 コンフィグファイルの設定
+パス: `src/consumer/nginx/volumes/default.conf`
+
 <span style="color: orange;">**以下、デモにあたっては変更の必要なし**</span>
 
-上で作成したサーバ証明書や秘密鍵をリバースプロキシに利用させるため、Nginxのコンフィグファイル（`klab-connector-v4/src/consumer/nginx/volumes/default.conf`）を編集する。
+上で作成したサーバ証明書や秘密鍵をリバースプロキシに利用させるため、Nginxのコンフィグファイルを編集する。
 
-暗号化に使用する秘密鍵やクライアントに配布するサーバ証明書のファイルパスが、コンフィグファイル内`ssl_certificate`, `ssl_certificate_key`という項目で指定される。デフォルトでは秘密鍵を`server.key`, 証明書を`server.crt`というファイル名で設定している。
+暗号化に使用する秘密鍵やサーバ証明書のファイルパスが、コンフィグファイル内`ssl_certificate`, `ssl_certificate_key`という項目でそれぞれ指定される。デフォルトでは秘密鍵を`server.key`, 証明書を`server.crt`というファイル名で設定している。
 ```bash
 cat ../default.conf | grep ssl_certificate
 ```
@@ -185,16 +177,16 @@ cat ../default.conf | grep ssl_certificate
 
 #### 1.1.5.1. 秘密鍵・証明書の準備
 
-`squid/volumes`ディレクトリ以下に、秘密鍵やクライアント証明書を配置するための`ssl`ディレクトリを作成する。これはフォワードプロキシ用のDockerコンテナにバインドマウントされる。
+`src/consumer`直下で以下のコマンドを実行し、`squid/volumes`ディレクトリ以下に秘密鍵やクライアント証明書を配置するための`ssl`ディレクトリを作成する。これはフォワードプロキシ用のDockerコンテナにバインドマウントされる。
 ```bash
 cd ./squid/volumes
 mkdir ssl
 cd ssl
 ```
 
-このデモでは、利用者コネクタと提供者コネクタを同一ホスト上に立ち上げている前提の下、準備の簡単のために利用者コネクタのフォワードプロキシとリバースプロキシ、さらに提供者コネクタのリバースプロキシという3つのプロキシすべてで同じ秘密鍵・証明書を用いることとする。
+CADDE構築デモでは、利用者コネクタと提供者コネクタを同一のローカルマシンに立ち上げるため、準備の簡単のために利用者コネクタのフォワードプロキシとリバースプロキシ、さらに提供者コネクタのリバースプロキシという3つのプロキシすべてで同じ秘密鍵・証明書を用いることとする。
 
-そこで、先に設定したリバースプロキシの秘密鍵と証明書をコピーする。また、`server.key`, `server.crt`といったファイル名をクライアント証明書用に`client.key`, `client.crt`に変更する。
+そこで、`src/consumer/squid/volumes/ssl`直下で以下のコマンドを実行し、先に設定したリバースプロキシの秘密鍵と証明書をコピーする。その後、`server.key`, `server.crt`といったファイル名を`client.key`, `client.crt`に変更する。
 ```bash
 cp ~/klab-connector-v4/src/consumer/nginx/volumes/ssl/* ./
 for file in server.*; do mv "$file" "${file/server/client}"; done
@@ -209,27 +201,19 @@ client.crt  client.csr  client.key
 
 SSL Bumpを用いて、利用者コネクタがプロキシを中継して提供者コネクタにアクセスするたびに、事前に用意した自己署名SSL証明書をもとにして、Squidが動的にサーバ証明書を生成して利用者コネクタに返すようにしている。
 
-そこで、以下のコマンドで事前にSSL Bump用の自己署名SSL証明書を用意しておく。実行の結果、秘密鍵と自己署名証明書の両方を含む`squidCA.pem`というファイルが作成される。
-なお、このコマンドの実行中にもサーバの国名やCommon Nameが聞かれる。先ほどと同様に、Common Nameのみ任意の文字列で設定し、それ以外の項目はスキップ、もしくは好きな文字列で設定する。
+そこで、`src/consumer/squid/volumes/ssl`直下で以下のコマンドを実行し、SSL Bump用の自己署名SSL証明書を作成する。実行の結果、秘密鍵と自己署名証明書の両方を含む`squidCA.pem`というファイルが作成される。
+
+なお、このコマンドの実行中にもサーバの国名やCommon Nameが聞かれるが、Common Nameのみ適当な文字列を入力し、それ以外の項目はスキップもしくは適当な文字列で設定する。
 ```bash
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -keyout squidCA.pem -out squidCA.pem
 ```
-```
-...
----
-Country Name (2 letter code) [AU]:
-State or Province Name (full name) [Some-State]:
-Locality Name (eg, city) []:
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:
-Organizational Unit Name (eg, section) []:
-Common Name (e.g. server FQDN or YOUR name) []:cadde.example.com
-Email Address []:
-```
 
 #### 1.1.5.3. コンフィグファイル編集
+パス: `src/consumer/squid/volumes/squid.conf`
+
 <span style="color: orange;">**以下、デモにあたっては変更の必要なし**</span>
 
-上で作成したクライアント証明書や秘密鍵をフォワードプロキシに利用させるため、Squidのコンフィグファイル（`connector/src/consumer/squid/volumes/squid.conf`）を編集する。
+上で作成したクライアント証明書や秘密鍵をフォワードプロキシに利用させるため、Squidのコンフィグファイルを編集する。
 
 サーバ接続時に使用するクライアント証明書や秘密鍵のファイルパスがコンフィグファイル内`tls_outgoing_options`という項目で指定される。デフォルトでは、秘密鍵を`client.key`, 証明書を`client.crt`という名前で設定している。
 ```bash
@@ -241,9 +225,8 @@ tls_outgoing_options cert=/etc/squid/ssl/client.crt key=/etc/squid/ssl/client.ke
 ```
 
 #### 1.1.5.4. プロキシ初回起動
-CADDEコネクタを起動する前に、フォワードプロキシ用コンテナを一度起動させておく必要があるため、以下のコマンドを実行する。
+`src/consumer/squid`直下で以下のコマンドを実行し、利用者コネクタ全体を起動する前に、フォワードプロキシ用コンテナを一度起動させておく。
 ```bash
-cd ~/klab-connector-v4/src/consumer/squid
 docker compose -f docker-compose_initial.yml up -d --build
 ```
 以下のコマンドでプロキシ（Squid）が起動しているか確認する。
@@ -257,7 +240,7 @@ forward-proxy       cadde-squid:4.0.0   "/usr/sbin/squid '-N…"   squid        
 ```
 
 #### 1.1.5.5. SSL Bump設定
-プロキシ用コンテナを起動させたら以下のコマンドを実行して、SSL Bump用の設定を行う。
+`src/consumer/squid`直下で以下のコマンドを実行し、SSL Bump用の設定を行う。
 ```bash
 # プロキシのSSL Bump設定
 docker exec -it forward-proxy /usr/lib/squid/security_file_certgen -c -s /var/lib/squid/ssl_db -M 20MB
@@ -267,18 +250,16 @@ docker exec -it forward-proxy /usr/lib/squid/security_file_certgen -c -s /var/li
 Initialization SSL db...
 Done
 ```
-
+プロキシコンテナ内の`var/lib/squid/ssl_db`ディレクトリをホスト上の`src/consumer/squid/volumes`以下にコピーする。
 ```bash
-# プロキシコンテナ内の`ssl_db`ディレクトリをホストにコピー
 docker cp forward-proxy:/var/lib/squid/ssl_db ./volumes/
 ```
 ```bash
 # output
 Successfully copied 3.58kB to /Users/mitk/klab-connector-v4/src/consumer/squid/volumes/
 ```
-
-```
-# 立ち上げたプロキシコンテナを一旦終了
+フォワードプロキシ用のSSL Bump用設定が終了したため、コンテナを終了する。
+```bash
 docker compose -f docker-compose_initial.yml down
 ```
 ```bash
@@ -287,20 +268,20 @@ docker compose -f docker-compose_initial.yml down
  ✔ Container forward-proxy  Removed
  ✔ Network squid_default    Removed
 ```
-無事コンテナが終了すれば次の手順に移る。
 
 ## 1.2. 利用者コネクタ起動手順
 
 ### 1.2.1. 利用者コネクタ起動
+`src/consumer`直下で以下のコマンドを実行し、利用者コネクタ用のDockerコンテナ群を起動する。
 ```bash
-cd ~/klab-connector-v4/src/consumer
 sh start.sh
 ```
 
-起動した利用者コネクタの構成は以下の通り（リバースプロキシのポートのみ異なる）。
+起動した利用者コネクタの構成は以下の通り。CADDE構築デモではリバースプロキシのポート番号のみ`10443`に変更している。
 ![利用者コネクタ構成](../png/consumer.png)
 
 ### 1.2.2. 利用者コネクタ起動確認
+`src/consumer`直下で以下のコマンドを実行し、利用者コネクタ用のDockerコンテナ群の起動状況を確認する。
 ```bash
 docker compose ps
 ```
@@ -317,29 +298,30 @@ consumer_reverse-proxy           nginx:1.23.1                           "/docker
 
 利用者コネクタが起動できれば、[usage.mdに記載された利用者コネクタの使い方](./usage.md#利用者)を参考にCADDEを利用する。
 
-### 1.2.3. 利用者コネクタ停止
+### 1.2.3. (利用者コネクタ停止)
+利用者コネクタを停止したい場合は、`src/consumer`直下で以下のコマンドを実行する。
 ```
 sh stop.sh
 ```
 
----
 
 # 2. 提供者コネクタ
 
 ## 2.1. 提供者コネクタ環境準備
 ### 2.1.1. 提供者コネクタ取得
-ソースコードの取得は[利用者コネクタの取得方法](#111-利用者コネクタ取得)を参照。
+ソースコードの取得は[利用者コネクタの取得方法](#111-利用者コネクタ取得)を参照。利用者コネクタ取得時に越塚研GitHubのリポジトリから一度クローンしていれば、提供者コネクタ用に別途クローンする必要はない。
 
-提供者コネクタのソースコードは`src/provider`に存在する。
+提供者コネクタのソースコードは同一リポジトリの`src/provider`配下に存在する。
 
 ### 2.1.2. 共通ファイルの展開
+`klab-connector-v4`ディレクトリ直下で、提供者コネクタ用ディレクトリ`src/provider`に移動し、`setup.sh`を実行する。
 ```bash
 cd src/provider
 sh setup.sh
 ```
 
 ### 2.1.3. コンフィグファイルの設定
-設定すべきファイルの一覧は以下の通り。
+設定すべきコンフィグファイルの一覧は以下の通り。
 
 | コンフィグファイル | 概要 |
 | :------------  | :----- |
@@ -353,10 +335,8 @@ sh setup.sh
 | docker-compose.yml | [**認可設定時**] 認可機能アクセスURLのマッピング |
 | requirements.txt | PyYAMLライブラリのバージョン指定 |
 
----
-
 #### provider_ckan.json: 横断検索・詳細検索カタログCKANサーバのアクセス設定
-パス: `connector-main/swagger_server/configs/provider_ckan.json`
+パス: `src/providerconnector-main/swagger_server/configs/provider_ckan.json`
 
 <span style="color: orange;">**以下、デモにあたっては変更の必要なし**</span>
 
@@ -377,20 +357,23 @@ sh setup.sh
 ```
 
 #### http.json: HTTPサーバから提供するリソースの設定
-パス: `connector-main/swagger_server/configs/http.json`
+パス: `src/provider/connector-main/swagger_server/configs/http.json`
 | 設定パラメータ | 概要 |
 | :---------- | :---- |
-| basic_auth | 提供リソースのドメインごとにBasic認証を行うか |
-| basic_auth.domain | Basic認証を行うリソースドメイン |
-| basic_auth.basic_id | `domain`アクセス時のBasic認証ID |
-| basic_auth.basic_pass | `domain`アクセス時のBasic認証パスワード |
+| basic_auth | **[変更の必要なし]** 提供リソースのドメインごとにBasic認証を行うか |
+| basic_auth.domain | **[変更の必要なし]** Basic認証を行うリソースドメイン |
+| basic_auth.basic_id | **[変更の必要なし]** `domain`アクセス時のBasic認証ID |
+| basic_auth.basic_pass | **[変更の必要なし]** `domain`アクセス時のBasic認証パスワード |
 | authorization | 提供リソースの認可確認設定. リクエストされたURLが設定されていなければTrueとして動作 |
 | authorization.url | 提供リソースURL |
 | authorization.enable | 提供リソースの認可確認有無 |
 | contract_management_service | 取引市場利用設定. リクエストされたURLが設定されていなければTrueとして動作 |
 | register_provenance | 来歴登録設定情報. リクエストされたURLが設定されていなければTrueとして動作 |
 
-**デモにあたっては、`authorization`, `contract_management_service`, `register_provenance`以下に提供したいリソースのURLを追加する。`basic_auth`は変更の必要なし。**
+CADDE構築デモにあたっては、`authorization`, `contract_management_service`, `register_provenance`以下に提供したいリソースのURLを追加する。また、デモでは取引市場の利用や来歴登録は対象外であるため、`authorization.enable`のみ`true`で設定しておき、`contract_management_service.enable`や`register_provenance.enable`は`false`としておく。
+
+**この`http.json`は提供データを追加したい場合に逐一編集するため、ここでは特に編集せず、コネクタ構築後にに提供者コネクタを利用したい場合に設定を行うことも可能である。**
+`http.json`に関しては、[usage.md内の提供者コネクタの使い方](./usage.md#2-提供者コネクタのデータ管理コンフィグ設定)で再度説明している。
 
 ```json:http.json
 {
@@ -403,19 +386,19 @@ sh setup.sh
     ],
     "authorization": [
         {
-            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
+            "url": "<リソースURL>",
             "enable": true
         }
     ],
     "contract_management_service": [
         {
-            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
+            "url": "<リソースURL>",
             "enable": false
         }
     ],
     "register_provenance": [
         {
-            "url": "http://172.26.16.20:3080/files/matsunaga/test.txt",
+            "url": "<リソースURL",
             "enable": false
         }
     ]
@@ -426,50 +409,55 @@ sh setup.sh
 #### ngsi.json: **未対応**
 
 #### authorization.json: 認可機能URLの設定
-パス: `authorization/swagger_server/configs/authorization.json`
-リソース提供時に認可確認を行う場合に、認可機能URLを設定する。
-[認可機能の構築方法はこちら](#31-認可機能構築手順)。
+パス: `src/provider/authorization/swagger_server/configs/authorization.json`
+
+リソース提供時に認可確認を行う場合に、認可機能URLを設定する。[認可機能の構築方法はこちら](#31-認可機能構築手順)
 | 設定パラメータ | 概要 |
 | :---------- | :---- |
 | authorization_server_url | 認可機能のアクセスURL |
 
-ローカル上で認可機能を構築する場合、単に`localhost`もしくは`127.0.0.1`にアクセスしてしまうと、提供者コネクタ用のコンテナ自身を指してしまう。
-そこで、下の例では認可機能のアクセスURLに適当なドメイン名を指定し、後に示す`docker-compose.yml`でドメイン名を解決する設定を行うことを想定している。
+CADDE構築デモでは、利用者コネクタ・提供者コネクタと同じく認可機能も同一のローカルマシン上に立ち上げる。
+そこで、利用者コネクタ構築時に提供者コネクタURLを適当に設定したのと同様に（参考: [利用者コネクタ`location.json`の設定](#113-コンフィグファイルの設定)）、認可機能のアクセスURLも適当に設定しておき、Dockerを用いてローカルマシンのIPアドレスに解決させる。例えば、提供者のCADDEユーザIDを用いて、`authz.cadde.<提供者ID>.com`というように指定可能。
 ```json:authorization.json
 {
-     "authorization_server_url": "http://authz.cadde.<userID>.com:5080"
+     "authorization_server_url": "<認可機能URL>"
 }
 ```
 
 #### connector.json: 提供者コネクタ設定
-パス: `connector_main/swagger_server/configs/connector.json`
+パス: `src/provider/connector_main/swagger_server/configs/connector.json`
 
 リソース提供時に認可確認を行う場合に、認可機能が発行する提供者コネクタ情報を設定する。
-[認可機能の構築方法はこちら](#31-認可機能構築手順)。
+[認可機能の構築方法はこちら](#31-認可機能構築手順)
 
-ここでは、`provider_connector_secret`に記入するクライアントシークレットは「認証」機能ではなく「認可」機能により発行されるものであることに注意が必要。認可機能を構築する前ではその設定ができないため、ここでは一旦適当な値で記入しておき、[3.1で認可機能を構築](#31-認可機能構築手順)したのち、[認可機能のセットアップ（3.2.3参照）](#323-認可機能セットアップ)が完了してから改めて記入し直すことを推奨する。
 | 設定パラメータ                     | 概要                                  |
 | :------------------------------ | :----------------------------------- |
 | provider_id | CADDEユーザID（提供者） |
-| provider_connector_id | **認可**機能発行の提供者コネクタのクライアントID |
+| provider_connector_id | 認証機能発行の提供者コネクタのクライアントID |
 | provider_connector_secret | **認可**機能発行の提供者コネクタのクライアントシークレット |
 | trace_log_enable | コネクタの詳細ログ出力有無（出力無の設定でも基本的な動作ログは出力される） |
+
+上の設定パラメータのうち、`provider_connector_secret`は「認証」機能ではなく「認可」機能により発行されるものであることに注意する。
+しかし、認可機能は本ドキュメントの[3. 認可機能](#3-認可機能)で構築するため、現時点ではクライアントシークレットは発行されていない。そのため、ここでは一旦適当な文字列を記入しておき、[3.1 認可機能構築手順](#31-認可機能構築手順)が完了したのち、改めて記入し直す。
   
 ```json:connector.json
 {
-    "provider_id" : "提供者ID",
-    "provider_connector_id" : "提供者コネクタのクライアントID",
-    "provider_connector_secret" : "提供者コネクタのクライアントシークレット",
+    "provider_id" : "<提供者ID>",
+    "provider_connector_id" : "<提供者コネクタ クライアントID>",
+    "provider_connector_secret" : "<提供者コネクタ クライアントシークレット>",
     "trace_log_enable" : false
 }
 ```
 
 #### docker-compose.yml: 認可機能アクセスURLのマッピング
-リソース提供時に認可確認を行う場合、上の`authorization.json`で指定した認可機能のドメイン名がグローバルに公開されていない場合はそれを解決させる設定が必要である。
-そのために、`docker-compose.yml`の認可IFに対応するコンテナ`provider-authorization`以下で、認可機能のドメインとIPアドレスのマッピングを追加する。
+パス: `src/provider/docker-compose.yml`
 
-下の例では、`authz.cadde.example.com`というドメインに対して`host-gateway`を割り当てている。
-前述の通り、`host-gateway`はDockerコンテナを立ち上げているホストのIPアドレスに自動変換されるため、この場合では認可機能と提供者コネクタが同一ホスト上のコンテナとして立ち上がっていることを想定している。
+CADDE構築デモでは、認可機能をローカルマシンに構築するため、上の`location.json`に記入した認可機能のドメインをIPアドレスにマッピングする必要がある。
+
+そのために、`docker-compose.yml`の認可IFに対応するコンテナ`provider-authorization`以下で、認可機能のドメインに対してIPアドレスを割り当てる。
+下の例では、`authorization.json`に記入した認可機能のドメインに対して`host-gateway`を割り当てている。
+
+前述の通り、`host-gateway`はDockerコンテナを立ち上げているホストのIPアドレスに自動変換される。
 
 ```yaml:docker-compose.yml
 version: "3"
@@ -478,7 +466,7 @@ services:
   provider-authorization:
     ...
     extra_hosts:
-      - "authz.cadde.<userID>.com:host-gateway"
+      - "<認可機能ドメイン>:host-gateway" # must change
 ```
 
 ### 2.1.4. リバースプロキシの設定
@@ -487,16 +475,16 @@ services:
 提供者コネクタへのアクセス制限を行うためにリバースプロキシでのTLS設定が必要となる。
 
 #### 2.1.4.1. 秘密鍵・サーバ証明書の準備
-秘密鍵やクライアント証明書を配置するための`ssl`ディレクトリを、`nginx/volumes`以下に作成する。これはリバースプロキシ用のDockerコンテナにバインドマウントされる。
+`src/provider`直下で以下のコマンドを実行し、`nginx/volumes`以下に秘密鍵やサーバ証明書を配置するための`ssl`ディレクトリを作成する。これはリバースプロキシ用のDockerコンテナにバインドマウントされる。
 ```bash
-cd ~/klab-connector-v4/src/provider/nginx/volumes
+cd ./nginx/volumes
 mkdir ssl
 cd ssl
 ```
 
-このデモでは、利用者コネクタと提供者コネクタを同一ホスト上に立ち上げている前提の下、準備の簡単のために利用者コネクタのフォワードプロキシとリバースプロキシ、さらに提供者コネクタのリバースプロキシという3つのプロキシすべてで同じ秘密鍵・証明書を用いることとする。
+前述の通り、CADDE構築デモでは、準備の簡単のために利用者コネクタのフォワードプロキシとリバースプロキシ、さらに提供者コネクタのリバースプロキシという3つのプロキシすべてで同じ秘密鍵・証明書を用いることとする。
 
-そこで、先に設定した利用者コネクタのリバースプロキシの秘密鍵と証明書をコピーする。
+そこで、`src/provider/nginx/volumes/ssl`直下で以下のコマンドを実行し、先に設定した利用者コネクタのリバースプロキシの秘密鍵と証明書をコピーする。ここでは`klab-connector-v4`がホームディレクトリに存在すると仮定するが、デモの環境に合わせて適宜変更する。
 ```bash
 cp ~/klab-connector-v4/src/consumer/nginx/volumes/ssl/* ./
 ls
@@ -516,9 +504,11 @@ cacert.pem  server.crt  server.csr  server.key
 ```
 
 #### 2.1.4.3. コンフィグファイルの設定
+パス: `connector/src/consumer/nginx/volumes/default.conf`
+
 <span style="color: orange;">**以下、デモにあたっては変更の必要なし**</span>
 
-上で作成したサーバ証明書や秘密鍵, クライアントCA証明書をリバースプロキシに利用させるため、Nginxのコンフィグファイル（`connector/src/consumer/nginx/volumes/default.conf`）を編集する。
+上で作成したサーバ証明書や秘密鍵, クライアントCA証明書をリバースプロキシに利用させるため、Nginxのコンフィグファイルを編集する。
 ここでは以下の項目が設定されている。
 | key                     | value |　概要 |
 | :-------------- | :--------------- | :--------------- |
@@ -536,18 +526,17 @@ cacert.pem  server.crt  server.csr  server.key
 ...
 ```
 
-
 ## 2.2. 提供者コネクタ起動手順
 ### 2.2.1 提供者コネクタ起動
+`src/provider`直下で以下のコマンドを実行し、提供者コネクタ用のDockerコンテナ群を起動する。
 ```bash
-cd ~/klab-connector-v4/src/provider
 sh start.sh
 ```
-
 起動した提供者コネクタの構成は以下の通り。
 ![提供者コネクタ構成](../png/producer.png)
 
 ### 2.2.2. 提供者コネクタ起動確認
+`src/provider`直下で以下のコマンドを実行し、提供者コネクタ用のDockerコンテナ群の起動状況を確認する。
 ```bash
 docker compose ps
 ```
@@ -564,26 +553,28 @@ provider_reverse-proxy           nginx:1.23.1                           "/docker
 提供者コネクタが起動できれば、[usage.mdに記載された提供者コネクタの使い方](./usage.md#提供者)を参考に、データ提供のための準備を行う。
 
 ### 2.2.3. (提供者コネクタ停止)
+提供者コネクタを停止したい場合は、`src/provider`直下で以下のコマンドを実行する。
 ```
 sh stop.sh
 ```
 
-
 # 3. 認可機能
 ## 3.1. 認可機能構築手順
-ソースコードの取得は[利用者コネクタの取得方法](#111-利用者コネクタ取得)を参照。
+ソースコードの取得は[利用者コネクタの取得方法](#111-利用者コネクタ取得)を参照。利用者コネクタや提供者コネクタ取得時に越塚研GitHubのリポジトリから一度クローンしていれば、認可機能用に別途クローンする必要はない。
 
-認可機能は`misc/authorization`以下に存在する。
+認可機能は同一リポジトリの`misc/authorization`以下に存在する。
+
+以下のコマンドで認可機能のソースコード配下に移動する。
 ```bash
-cd ~/klab-connector-v4/misc/authorization
+cd misc/authorization
 ```
 
 ### 3.1.1. コンフィグファイルの設定
 #### docker-compose.yaml
+パス: `misc/authorization/docker-compose.yaml`
 
 **以下、デモにあたっては変更の必要なし**
 
-`misc/authorization/docker-compose.yaml`
 認可機能用Dockerコンテナ群を起動するための設定ファイル。
 
 | 設定パラメータ                     | 概要                                  |
@@ -628,24 +619,24 @@ services:
 パス: `misc/authorization/settings.json`
 
 認可機能APIサーバで使用する設定ファイル。
-| 設定パラメータ                     | 概要                                  |
-| :------------------------------ | :----------------------------------- |
+| 設定パラメータ | 概要 |
+| :---------- | :-- |
 | provider_connector_id　| 提供者コネクタのクライアントID |
-| client_id | **認証**機能発行の**認可機能**のクライアントID |
-| client_secret | **認証**機能発行の**認可機能**のクライアントシークレット |
-| authz_keycloak_url | **認可**機能KeycloakのベースURL |
-| authn_url | **認証**機能APIのベースURL |
-| authn_keycloak_url | **認証**機能KeycloakのベースURL |
-| authn_realm_name | **認証**機能のレルム名 |
-| subject_issuer | **認証**機能を表す文字列(authenticationを指定しておく) |
+| client_id | 認証機能発行の認可機能のクライアントID |
+| client_secret | 認証機能発行の認可機能のクライアントシークレット |
+| authz_keycloak_url | 認可機能KeycloakのベースURL |
+| authn_url | **[変更の必要なし]** 認証機能APIのベースURL |
+| authn_keycloak_url | **[変更の必要なし]** 認証機能KeycloakのベースURL |
+| authn_realm_name | **[変更の必要無し]** 認証機能のレルム名 |
+| subject_issuer | **[変更の必要なし]** 認証機能を表す文字列(authenticationを指定しておく) |
 
-下の例では、`authz_keycloak_url`のドメインに対して認可機能リバースプロキシ用コンテナの名前である`authz_nginx`を設定し、Dockerに名前解決させる。
+上の設定パラメータのうち`authz_keycloak_url`に関して、認可機能リバースプロキシ用コンテナの名前である`authz_nginx`を用いて`http://authz_nginx/keycloak`と指定することが可能である。こうした場合、認可機能リバースプロキシ用コンテナのドメイン名はDockerによって解決される。
 ```json:settings.json
 {
-  "provider_connector_id": "提供者コネクタ クライアントID",
-  "client_id": "認可機能 クライアントID",
-  "client_secret": "認可機能 クライアントシークレット",
-  "authz_keycloak_url": "http://authz_nginx/keycloak",
+  "provider_connector_id": "<提供者コネクタ クライアントID>",
+  "client_id": "<認可機能 クライアントID>",
+  "client_secret": "<認可機能 クライアントシークレット>",
+  "authz_keycloak_url": "<認可機能Keycloak URL>",
   "authn_url": "https://authn.ut-cadde.jp:18443/cadde/api/v4",
   "authn_keycloak_url": "https://authn.ut-cadde.jp:18443/keycloak",
   "authn_realm_name": "authentication",
@@ -657,7 +648,10 @@ services:
 認証トークンと認可トークンの交換に伴い、認可サーバから認証サーバへのHTTPS通信が発生する。
 この通信は認可機能FastAPIコンテナ, Keycloakコンテナから発生するため、対応するコンテナにTLS/HTTPSの設定を追加する必要がある。
 
-まずは認証機能のCA証明書、つまり研究室内プライベート認証局の証明書`cacert.pem`（PEM形式）とKeycloak用のCA証明書 `kcTrustStore.p12`（PKCS12トラストストア形式）を認可機能に配置する。`cacert.pem`, `kcTrustStore.p12`は研究室内プライベート認証局の管理者から受け取っておく。
+まず、`misc/authorization`直下で以下のコマンドを実行し、認証機能のCA証明書、つまり研究室内プライベート認証局の証明書`cacert.pem`（PEM形式）とKeycloak用のCA証明書 `kcTrustStore.p12`（PKCS12トラストストア形式）を配置するための`certs`ディレクトリを作成する。その後、`cacert.pem`, `kcTrustStore.p12`の各ファイルを`certs`ディレクトリに移動させる。
+
+※ `cacert.pem`, `kcTrustStore.p12`はそれぞれ研究室内プライベート認証局の担当者から事前に受け取っておく。
+
 ```bash
 mkdir certs
 mv ./cacert.pem certs/
@@ -705,23 +699,27 @@ services:
 ```
 
 ### 3.1.3. Dockerイメージの作成
-Keycloakコンテナを立ち上げるため、`prebuilt_keycloak:19.0.2`というDockerイメージを作成する。そのために、以下のシェルスクリプトを実行する。パスワードを聞かれたら、rootユーザのパスワードを入力する。
+`misc/authorization`直下で以下のコマンドを実行し、認可機能用Keycloakコンテナのイメージ（`prebuilt_keycloak:19.0.2`）を作成する。パスワードを聞かれた場合は、コマンドを実行しているマシンのrootユーザのパスワードを入力する。
 ```bash
 ./image_build_keycloak.sh
 ```
 
-同様にFastAPIコンテナを立ち上げるため、`fastapi:latest`というDockerイメージを作成する。そのために、以下のシェルスクリプトを実行する。パスワードを聞かれたら、rootユーザのパスワードを入力する。
+同様にして認可機能用FastAPIコンテナのイメージ（`fastapi:latest`）を作成する。
 ```bash
 ./image_build_fastapi.sh
 ```
 
 ## 3.2. 認可機能起動手順
 ### 3.2.1. 認可機能起動
+`misc/authorization`直下で以下のコマンドを実行し、認可機能用のDockerコンテナ群を起動する。
+
+※ 認可機能起動時には、既に[提供者コネクタの起動](#221-提供者コネクタ起動)が完了し、`provider_default`というDockerネットワークが作成されている必要がある。一度提供者コネクタを起動していれば、認可機能起動時に提供者コネクタが並行して立ち上がっている必要はない。
 ```bash
 ./start.sh
 ```
 
 ### 3.2.2. 認可機能起動確認
+`misc/authorization`直下で以下のコマンドを実行し、認可機能用のDockerコンテナ群の起動状況を確認する。
 ```bash
 docker compose ps
 ```
@@ -734,19 +732,18 @@ authz_postgres      postgres:14.4              "docker-entrypoint.s…"   postgr
 ```
 
 ### 3.2.3. 認可機能セットアップ
-コンテナを起動中に`./provider_setup.sh`を実行して、対話的に以下の項目を入力する。これらは`settings_provider_setup.json`に書き込まれる。
-| 設定パラメータ                     | 概要                                  |
-| :------------------------------ | :----------------------------------- |
+認可機能コンテナの起動中に、`misc/authorization`直下で`./provider_setup.sh`を実行し、以下の設定パラメータを対話的に入力する。これらの設定項目は`settings_provider_setup.json`に書き込まれる。
+
+| 設定パラメータ | 概要 |
+| :---------- | :-- |
 | CADDEユーザID　| 提供者のユーザID。これは認可機能Keycloakのレルム名として使用される。 |
 | 提供者コネクタのクライアントID | 先に設定した`settings.json`内の`provider_connector_id`の値と一致させる。 |
 | CADDE認証機能認証サーバのURL | 先に設定した`settings.json`の`authn_keycloak_url`と値を一致させる。 |
 
-実行が完了すると、認可を設定するためのKeycloakのセットアップが完了する。
 ```bash
 bash ./provider_setup.sh
 ```
 ```bash
-# output
 CADDEユーザID: <提供者ID>
 提供者コネクタのクライアントID: <提供者コネクタ クライアントID>
 CADDE認証機能認証サーバのURL: https://authn.ut-cadde.jp:18443/keycloak
@@ -790,11 +787,13 @@ token-exchangeスコープのUUID: 0dca0b19-0017-43fa-aaa7-dcefd17c7315
 ## Token Exchangeに関わるパーミッションの設定
 Token Exchangeに関わるパーミッションを設定しました
 ```
-```json:provider_setup.json
+実行が完了すると、`settings_provider_setup.json`に入力した設定項目が記入され、認可を設定するためのKeycloakの初期設定が完了する。
+```json:settings_provider_setup.json
 { "realm": "<提供者ID>", "client": "<提供者コネクタ クライアントID>", "identity_provider": "https://authn.ut-cadde.jp:18443/keycloak" }
 ```
 
 ### 3.2.4. (認可機能停止)
+提供者コネクタを停止したい場合は、`misc/authorization`直下で以下のコマンドを実行する。
 ```bash
 ./stop.sh
 ```

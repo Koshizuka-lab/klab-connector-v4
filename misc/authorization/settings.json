@@ -1,8 +1,8 @@
 {
-  "provider_connector_id": "matsunaga_provider_connector",
-  "client_id": "matsunaga_provider_authz",
-  "client_secret": "nb7Ga4vsa80vy1axGMuUSkse0X3BUy8m",
-  "authz_keycloak_url": "http://authz_nginx/keycloak",
+  "provider_connector_id": "<提供者コネクタ クライアントID>",
+  "client_id": "<認可機能 クライアントID>",
+  "client_secret": "<認可機能 クライアントシークレット>",
+  "authz_keycloak_url": "<認可機能Keycloak URL>",
   "authn_url": "https://authn.ut-cadde.jp:18443/cadde/api/v4",
   "authn_keycloak_url": "https://authn.ut-cadde.jp:18443/keycloak",
   "authn_realm_name": "authentication",

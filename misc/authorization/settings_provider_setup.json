@@ -1,1 +1,1 @@
-{ "realm": "matsunaga", "client": "matsunaga_provider_connector", "identity_provider": "https://authn.ut-cadde.jp:18443/keycloak" }
+{ "realm": "<提供者ID>", "client": "<提供者コネクタ クライアントID>", "identity_provider": "https://authn.ut-cadde.jp:18443/keycloak" }

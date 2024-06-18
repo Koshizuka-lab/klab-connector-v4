@@ -1,0 +1,110 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 0 (0x0)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=JP, ST=Tokyo, L=Bunkyo, O=The University of Tokyo, CN=ca.dataspace.internal
+        Validity
+            Not Before: Jun 15 11:48:17 2024 GMT
+            Not After : Jun 15 11:48:17 2025 GMT
+        Subject: C=JP, ST=Tokyo, O=The University of Tokyo, OU=Koshizuka Lab, CN=*.koshizukalab.dataspace.internal
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    00:bc:b7:1c:e4:c3:30:54:7e:a3:fd:6d:7b:93:c5:
+                    92:8f:ae:0b:2f:1b:62:b2:e1:3d:59:74:9e:52:8f:
+                    bc:7c:a6:c0:da:25:55:c2:71:24:d2:b3:cd:0d:5b:
+                    f2:ef:38:87:46:60:de:a4:2d:51:d5:5d:b1:b3:47:
+                    d6:9e:97:70:10:b7:08:33:f7:26:d6:ca:52:9b:e2:
+                    4f:51:9a:d4:a3:27:95:e9:0e:c1:d1:8f:14:7b:da:
+                    98:e8:5d:05:cb:ac:8b:88:86:73:d2:3d:6e:90:f0:
+                    85:5e:39:95:a1:f3:f4:01:2d:a0:bc:99:75:64:28:
+                    e0:ba:3b:70:85:a6:7c:9f:6c:3e:82:27:b4:f0:d5:
+                    c0:68:79:70:50:e1:51:ee:e4:93:84:a1:76:be:12:
+                    42:ed:7d:88:f9:c5:68:6c:19:ec:40:75:f2:40:64:
+                    f5:7f:ba:e4:c4:ef:ad:d6:7a:df:c4:cb:85:59:55:
+                    6a:8f:dd:2a:e5:e7:b6:7e:17:3d:e0:5c:61:bc:30:
+                    aa:5e:6c:d0:4c:a0:75:47:94:06:bb:7d:e4:ca:d4:
+                    d7:d9:f2:06:2a:37:99:9d:3a:99:28:f6:3a:6b:c7:
+                    b2:1e:1c:68:84:d9:40:65:c9:22:44:df:64:42:18:
+                    44:db:9a:17:40:0b:c6:6f:af:e9:22:0f:0a:3c:80:
+                    2b:12:2b:6c:b9:ad:0d:68:34:df:2e:22:7b:23:09:
+                    f1:70:5d:c8:c5:67:6f:46:b5:b6:42:ea:17:b9:2f:
+                    96:2f:44:6b:af:b8:d4:9c:eb:c8:c0:ab:2a:1c:50:
+                    1b:63:b6:fa:9f:dd:b5:9c:5a:bb:1f:d0:5d:42:f1:
+                    56:e7:e7:3c:9e:73:8f:92:dc:ca:7a:ce:db:a0:aa:
+                    6b:12:b3:0c:4e:1f:23:c7:56:df:1f:76:22:9c:b1:
+                    5f:a2:18:e2:1c:8c:2e:55:e8:f1:de:ed:ca:56:43:
+                    b1:4e:84:ad:d5:c6:7a:9b:3b:aa:24:f8:4b:5e:9c:
+                    a5:41:d7:09:4d:62:7e:e5:c6:37:d7:3d:e7:73:69:
+                    61:0b:4f:5c:5c:72:f4:84:53:b3:cc:f7:fe:b7:33:
+                    ae:29:20:fd:33:4c:14:57:c1:09:05:d2:36:d8:9a:
+                    93:49:ec:cc:dc:c8:35:b2:f4:e9:a1:f2:19:46:a7:
+                    15:9c:c1:89:1a:1c:3c:54:2d:72:0e:48:15:b4:ae:
+                    79:63:d4:7c:dd:90:ea:a4:d6:78:2b:11:fb:95:ae:
+                    fc:f7:bb:64:48:34:e8:dd:5d:54:f2:b0:52:f8:b4:
+                    5b:1f:55:7e:7e:b8:22:2b:bb:0f:5a:26:2e:a2:2a:
+                    2a:04:2d:7c:6b:a9:ba:2d:74:cd:10:01:78:49:f3:
+                    a9:50:5b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Comment: 
+                OpenSSL Generated Certificate
+            X509v3 Subject Key Identifier: 
+                AA:37:2B:B6:7C:7E:64:E0:3C:72:A0:70:2A:03:B4:A9:CB:50:8E:0E
+            X509v3 Authority Key Identifier: 
+                5A:3F:21:3C:1C:CB:3D:11:23:A5:63:97:1A:C0:6A:7E:DE:4B:3B:00
+            X509v3 Key Usage: 
+                Digital Signature, Non Repudiation, Key Encipherment
+            X509v3 Subject Alternative Name: 
+                DNS:*.koshizukalab.dataspace.internal
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        9a:c2:bd:74:05:17:9f:47:ee:df:b4:6e:38:58:da:2d:ba:e2:
+        80:2d:4d:d6:29:5a:28:cb:ff:1a:c9:69:3a:0f:d6:a6:3e:6d:
+        93:1c:db:97:fc:a2:19:f5:ae:8c:45:5b:82:6a:cb:e7:80:bb:
+        c0:5b:d8:61:3e:64:bf:f6:81:04:80:9f:54:d1:9b:12:24:d6:
+        6a:7c:47:20:4d:b9:d4:58:6a:23:b8:b1:24:48:c6:fa:5c:6a:
+        b4:23:e4:8d:88:e2:06:22:df:7a:49:8e:99:e0:45:6a:a0:b3:
+        40:56:38:21:a1:40:5c:b1:55:f0:d3:7c:00:02:05:a3:11:d5:
+        2e:6a:39:fd:4a:f3:19:08:08:1d:0e:13:c3:cc:5c:da:3f:41:
+        63:3e:a4:e0:76:54:3c:71:bb:1c:89:c8:df:fd:c8:73:d7:4c:
+        f5:ed:9b:98:bd:e8:20:68:36:8c:d3:51:7e:bb:92:0e:c9:5b:
+        81:4a:0b:c6:87:c7:d4:52:89:71:8f:bb:d6:b3:40:42:4e:cc:
+        e7:52:b2:32:24:01:1b:7e:15:bd:b8:8c:78:b1:79:41:e6:75:
+        44:14:7a:05:94:5d:9c:5f:ca:d9:f7:52:14:97:f9:a4:00:3d:
+        7e:d8:aa:25:a1:ab:18:a7:60:c6:bc:1e:bf:b5:14:48:e1:33:
+        08:8a:26:2e
+-----BEGIN CERTIFICATE-----
+MIIFJzCCBA+gAwIBAgIBADANBgkqhkiG9w0BAQsFADBwMQswCQYDVQQGEwJKUDEO
+MAwGA1UECAwFVG9reW8xDzANBgNVBAcMBkJ1bmt5bzEgMB4GA1UECgwXVGhlIFVu
+aXZlcnNpdHkgb2YgVG9reW8xHjAcBgNVBAMMFWNhLmRhdGFzcGFjZS5pbnRlcm5h
+bDAeFw0yNDA2MTUxMTQ4MTdaFw0yNTA2MTUxMTQ4MTdaMIGDMQswCQYDVQQGEwJK
+UDEOMAwGA1UECAwFVG9reW8xIDAeBgNVBAoMF1RoZSBVbml2ZXJzaXR5IG9mIFRv
+a3lvMRYwFAYDVQQLDA1Lb3NoaXp1a2EgTGFiMSowKAYDVQQDDCEqLmtvc2hpenVr
+YWxhYi5kYXRhc3BhY2UuaW50ZXJuYWwwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAw
+ggIKAoICAQC8txzkwzBUfqP9bXuTxZKPrgsvG2Ky4T1ZdJ5Sj7x8psDaJVXCcSTS
+s80NW/LvOIdGYN6kLVHVXbGzR9ael3AQtwgz9ybWylKb4k9RmtSjJ5XpDsHRjxR7
+2pjoXQXLrIuIhnPSPW6Q8IVeOZWh8/QBLaC8mXVkKOC6O3CFpnyfbD6CJ7Tw1cBo
+eXBQ4VHu5JOEoXa+EkLtfYj5xWhsGexAdfJAZPV/uuTE763Wet/Ey4VZVWqP3Srl
+57Z+Fz3gXGG8MKpebNBMoHVHlAa7feTK1NfZ8gYqN5mdOpko9jprx7IeHGiE2UBl
+ySJE32RCGETbmhdAC8Zvr+kiDwo8gCsSK2y5rQ1oNN8uInsjCfFwXcjFZ29GtbZC
+6he5L5YvRGuvuNSc68jAqyocUBtjtvqf3bWcWrsf0F1C8Vbn5zyec4+S3Mp6ztug
+qmsSswxOHyPHVt8fdiKcsV+iGOIcjC5V6PHe7cpWQ7FOhK3VxnqbO6ok+EtenKVB
+1wlNYn7lxjfXPedzaWELT1xccvSEU7PM9/63M64pIP0zTBRXwQkF0jbYmpNJ7Mzc
+yDWy9Omh8hlGpxWcwYkaHDxULXIOSBW0rnlj1HzdkOqk1ngrEfuVrvz3u2RINOjd
+XVTysFL4tFsfVX5+uCIruw9aJi6iKioELXxrqbotdM0QAXhJ86lQWwIDAQABo4G3
+MIG0MAkGA1UdEwQCMAAwLAYJYIZIAYb4QgENBB8WHU9wZW5TU0wgR2VuZXJhdGVk
+IENlcnRpZmljYXRlMB0GA1UdDgQWBBSqNyu2fH5k4DxyoHAqA7Spy1CODjAfBgNV
+HSMEGDAWgBRaPyE8HMs9ESOlY5cawGp+3ks7ADALBgNVHQ8EBAMCBeAwLAYDVR0R
+BCUwI4IhKi5rb3NoaXp1a2FsYWIuZGF0YXNwYWNlLmludGVybmFsMA0GCSqGSIb3
+DQEBCwUAA4IBAQCawr10BRefR+7ftG44WNotuuKALU3WKVooy/8ayWk6D9amPm2T
+HNuX/KIZ9a6MRVuCasvngLvAW9hhPmS/9oEEgJ9U0ZsSJNZqfEcgTbnUWGojuLEk
+SMb6XGq0I+SNiOIGIt96SY6Z4EVqoLNAVjghoUBcsVXw03wAAgWjEdUuajn9SvMZ
+CAgdDhPDzFzaP0FjPqTgdlQ8cbscicjf/chz10z17ZuYveggaDaM01F+u5IOyVuB
+SgvGh8fUUolxj7vWs0BCTsznUrIyJAEbfhW9uIx4sXlB5nVEFHoFlF2cX8rZ91IU
+l/mkAD1+2KoloasYp2DGvB6/tRRI4TMIiiYu
+-----END CERTIFICATE-----

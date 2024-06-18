@@ -1,7 +1,7 @@
 {
     "connector_location": {
-        "provider1": {
-            "provider_connector_url": "https://cadde.provider1.com"
+        "test1": {
+            "provider_connector_url": "https://cadde-provider-test1.koshizukalab.dataspace.internal:1443"
         }
     }
 }

@@ -1,6 +1,6 @@
 {
-    "release_ckan_url": "http://172.26.16.16:5000",
-    "detail_ckan_url": "http://172.26.16.16:5000",
+    "release_ckan_url": "http://cadde-federated-catalog.koshizukalab.dataspace.internal:23000",
+    "detail_ckan_url": "https://cadde-catalog-test1.koshizukalab.dataspace.internal:8443",
     "authorization": true,
     "packages_search_for_data_exchange": false
 }

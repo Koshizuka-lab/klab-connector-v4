@@ -12,7 +12,7 @@ services:
     image: nginx:1.23.1
     container_name: authz_nginx
     ports:
-      - "0.0.0.0:5080:80" # must change
+      - "5080:80" # must change
     volumes:
       - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro"
@@ -36,8 +36,6 @@ services:
       - "./certs/cacert.pem:/etc/docker/certs.d/cacert.pem:ro"
     environment:
       - REQUESTS_CA_BUNDLE=/etc/docker/certs.d/cacert.pem
-    extra_hosts:
-      - "authn.ut-cadde.jp:172.26.16.20"
     command: 'python -m uvicorn main:app --reload --host 0.0.0.0'
     restart: always
 
@@ -46,7 +44,7 @@ services:
     build: ./keycloak
     container_name: authz_keycloak
     volumes:
-      - "./certs/kcTrustStore.p12:/opt/keycloak/kcTrustStore.p12:ro"
+      - "./certs/cacert.p12:/opt/keycloak/cacert.p12:ro"
     environment:
       KEYCLOAK_ADMIN: admin # must change
       KEYCLOAK_ADMIN_PASSWORD: admin # must change
@@ -58,12 +56,10 @@ services:
       KC_FEATURES_DISABLED: admin2
       KC_PROXY: "edge"
       JAVA_OPTS_APPEND: "-Dkeycloak.profile=preview -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.profile.feature.token_exchange=enabled -Dkeycloak.profile.feature.authz_drools_policy=enabled -Dkeycloak.profile.feature.admin_fine_grained_authz=enabled"
-      KC_SPI_TRUSTSTORE_FILE_FILE: kcTrustStore.p12
-      KC_SPI_TRUSTSTORE_FILE_PASSWORD: koshizukalab
+      KC_SPI_TRUSTSTORE_FILE_FILE: cacert.p12
+      KC_SPI_TRUSTSTORE_FILE_PASSWORD: testbed
       KC_SPI_TRUSTSTORE_FILE_HOSTNAME_VERIFICATION_POLICY: WILDCARD
       KC_SPI_TRUSTSTORE_FILE_TYPE: pkcs12
-    extra_hosts:
-      - "authn.ut-cadde.jp:172.26.16.20"
     depends_on:
       - postgres
     command: start-dev

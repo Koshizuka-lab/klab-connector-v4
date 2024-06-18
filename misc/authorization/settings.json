@@ -1,10 +1,10 @@
 {
-  "provider_connector_id": "provider1_connector",
-  "client_id": "provider1_authz",
-  "client_secret": "qUcsIDg1WtPzmNAMKWernRxgtNHtSbUB",
-  "authz_keycloak_url": "http://172.26.16.16:5080/keycloak",
-  "authn_url": "https://authn.ut-cadde.jp:18443/cadde/api/v4",
-  "authn_keycloak_url": "https://authn.ut-cadde.jp:18443/keycloak",
+  "provider_connector_id": "provider-test1",
+  "client_id": "authz-test1",
+  "client_secret": "TpNKCKYkzLBQxQocjg6ysscItVWOnVq8",
+  "authz_keycloak_url": "http://authz_nginx/keycloak",
+  "authn_url": "https://cadde-authn.koshizukalab.dataspace.internal:18443/cadde/api/v4",
+  "authn_keycloak_url": "https://cadde-authn.koshizukalab.dataspace.internal:18443/keycloak",
   "authn_realm_name": "authentication",
   "subject_issuer": "authentication"
 }

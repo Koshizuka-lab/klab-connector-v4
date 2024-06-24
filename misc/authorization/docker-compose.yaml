@@ -44,7 +44,7 @@ services:
     build: ./keycloak
     container_name: authz_keycloak
     volumes:
-      - "./certs/cacert.p12:/opt/keycloak/cacert.p12:ro"
+      - "./certs/cacert.pem:/opt/keycloak/cacert.pem:ro"
     environment:
       KEYCLOAK_ADMIN: admin # must change
       KEYCLOAK_ADMIN_PASSWORD: admin # must change
@@ -62,7 +62,11 @@ services:
       KC_SPI_TRUSTSTORE_FILE_TYPE: pkcs12
     depends_on:
       - postgres
-    command: start-dev
+    entrypoint: >
+      /bin/bash -c "keytool -import -noprompt -file cacert.pem -keystore cacert.jks -storepass testbed
+      && keytool -importkeystore -noprompt -srckeystore cacert.jks -srcstorepass testbed -destkeystore cacert.p12 -deststoretype PKCS12 -deststorepass testbed
+      && /opt/keycloak/bin/kc.sh start-dev"
+    # command: start-dev
     restart: always
 
   postgres:

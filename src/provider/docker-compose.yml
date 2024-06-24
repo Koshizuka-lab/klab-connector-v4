@@ -30,8 +30,11 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./certs/cacert.pem:/usr/local/share/ca-certificates/cacert.pem"
     environment:
       - "LC_CTYPE=C.UTF-8"
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+    entrypoint: /bin/sh -c "update-ca-certificates && python3 -m swagger_server"
   provider-data-exchange:
     build: data-exchange
     image: provider/data-exchange:4.0.0

@@ -85,7 +85,6 @@ ipython_config.py
 
 # ---------- TLS ----------
 *.csr
-*.key
 
 # ---------- CADDE ----------
 src/consumer/squid/volumes/ssl_db/*

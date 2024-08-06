@@ -1,6 +1,6 @@
 {
-    "provider_id" : "test1",
-    "provider_connector_id" : "provider-test1",
-    "provider_connector_secret" : "z9DZIbD6taBkz87O3zRCVaPb1YBq5BSl",
+    "provider_id" : "<CADDEユーザID>",
+    "provider_connector_id" : "<提供者コネクタのクライアントID>",
+    "provider_connector_secret" : "<提供者コネクタのクライアントシークレット>",
     "trace_log_enable" : true
 }

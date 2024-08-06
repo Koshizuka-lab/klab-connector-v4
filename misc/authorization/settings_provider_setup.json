@@ -1,1 +1,1 @@
-{ "realm": "test1", "client": "provider-test1", "identity_provider": "https://cadde-authn.koshizukalab.dataspace.internal:18443/keycloak" }
+{ "realm": "", "client": "", "identity_provider": "" }

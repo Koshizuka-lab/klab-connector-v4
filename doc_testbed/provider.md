@@ -1,28 +1,67 @@
-# データ提供者環境の構築 (WIP)
+# データ提供者環境の構築
 
-# 前提条件
-- CADDEテストベッド利用申請
-- ドメインの取得
-- TLS証明書の取得
-- データサーバの準備
-  - HTTPサーバを立ち上げる（Dockerコンテナ）
-  - 提供者コネクタ connector_main にextra_hostsを追加
-    - 内部ドメイン `data-management.<username>.internal`
-- GitHub利用準備
-  - SSHでクローンする場合
+# 前提
+
+## CADDEテストベッド参加のための事前準備
+
+CADDEテストベッドの利用開始にあたって、テストベッド参加者は[CADDEテストベッド参加のための事前準備](./README.md#caddeテストベッド参加のための事前準備)を行う必要がある。
+
+以降のデータ提供者環境の構築にあたっては、以下の作業が完了していることを前提とする。
+- [CADDEテストベッド利用情報の取得](./README.md#caddeテストベッド利用情報の取得)
+- [CADDEテストベッド参加者環境のドメイン登録](./README.md#caddeテストベッド参加者環境のドメイン登録)
+- [CADDEテストベッド用TLS証明書の取得](./README.md#caddeテストベッド用tls証明書の取得)
+
+
+## 実行環境
+<!-- TODO: 詳細に記述する -->
+データ提供者環境を構築するマシンは以下の条件を満たすことを前提とする。
+- OS：Linux
+- CPU：2コア
+- メモリ：4GB
+- ディスク：20GB
+
+また、以下のコマンドおよびソフトウェアが利用可能であることを前提とする。
+- curl
+- jq
+- git
+- docker
+- openssl
+
+
+## 提供データ
+データ提供者環境は、CADDE上で提供するためのデータおよびデータを保管するデータサーバが存在することを前提とする。
+
+CADDE上で提供されるデータについて、提供者コネクタでは以下のデータサイズを満たすデータのみがサポートされている。
+- コンテキスト情報：1MB 以下
+- ファイル：100MB 以下
+
+また、データサーバは、HTTP / FTP / NGSIのいずれかのプロトコルによって提供者コネクタからアクセス可能であることを前提とする。
+なお、CADDEテストベッドではデータサーバとしてHTTPサーバを構築することを推奨する。
+
+データサーバは提供者コネクタからアクセス可能であれば、公開サーバ・非公開サーバのどちらでもよい。
+基本的には、データ提供時の認可が不要であれば公開サーバ、認可を必要とするなら非公開サーバとする使い分けが一般的である。
 
 
 # 1. インストール
 
+データ提供者環境では、以下3つのアプリケーションを構築する。
+- 提供者カタログサイト
+- 認可機能
+- 提供者コネクタ
+
+はじめに、これ以降の作業を行うディレクトリを作成し、以降のコマンドでは環境変数${WORKDIR}で参照することとする。
+```bash
+$ mkdir ~/cadde_testbed
+$ cd ~/cadde_testbed
+$ export WORKDIR=$PWD
+```
+
 ## 1.1. 提供者カタログサイト
 
 ### 1.1.1. CKANの構築
-CKAN公式ドキュメント"[Installing CKAN](https://docs.ckan.org/en/2.10/maintaining/installing/index.html)"の手順に従い、CKANサイトを構築する。
+[CKAN公式ドキュメントのインストール手順](https://docs.ckan.org/en/2.10/maintaining/installing/index.html)に従い、CKANサイトを構築する。
 
-なお、[CKANの推奨動作環境](https://github.com/ckan/ckan/wiki/Hardware-Requirements)は以下の通り。
-- CPU：2コア
-- メモリ：4GB
-- ディスク：60GB
+（参考：[CKANの推奨動作環境](https://github.com/ckan/ckan/wiki/Hardware-Requirements)）
 
 以下では参考として、Docker Composeを用いた構築手順を示す。
 
@@ -30,7 +69,6 @@ CKAN公式ドキュメント"[Installing CKAN](https://docs.ckan.org/en/2.10/mai
 ```bash
 $ cd ${WORKDIR}
 $ git clone https://github.com/ckan/ckan-docker.git
-$ cp .env.example .env
 ```
 
 `.env`ファイル内で、以下の環境変数を設定する。
@@ -38,13 +76,15 @@ $ cp .env.example .env
   - CKANコンテナを公開するポート番号
 - `CKAN_SITE_URL`
   - CKANサイトのアクセスに用いるURL
-  - CADDEテストベッド参加の事前準備で取得しておいた、提供者カタログサイトのドメイン名を用いる
+  - CADDEテストベッド参加の事前準備で取得しておいた提供者カタログサイトのドメイン名を用いる
 - `CKAN_SYSADMIN_NAME`
   - CKANサイト管理者のユーザ名
 - `CKAN_SYSADMIN_PASSWORD`
   - CKANサイト管理者のパスワード（英数字8文字以上）
 
 ```bash
+$ cd ${WORKDIR}/ckan-docker
+$ cp .env.example .env
 $ vim .env
 # Host Ports
 NGINX_SSLPORT_HOST=<ポート番号>
@@ -69,7 +109,7 @@ $ ls ${WORKDIR}/ckan-docker/nginx/setup/
 ckan-local.crt  ckan-local.key  default.conf  index.html  nginx.conf
 ```
 
-そして、CKANのリバースプロキシ用コンテナのDockerfileを以下の内容に書き換える。
+そして、CKANのリバースプロキシ用コンテナのDockerfile（`ckan-docker/nginx/Dockerfile`）を以下の内容に書き換える。
 ```dockerfile
 FROM nginx:stable-alpine
 
@@ -99,6 +139,7 @@ $ docker compose up -d
 ```
 
 提供者カタログの起動状況は以下のコマンドで確認できる。
+6つのコンテナすべてが立ち上がっていれば完了である。
 ```bash
 $ cd ${WORKDIR}/ckan-docker
 $ docker compose ps
@@ -106,7 +147,7 @@ $ docker compose ps
 
 
 ### 1.1.2. CKANの初期設定
-CKAN公式ドキュメント"[Getting Started](https://docs.ckan.org/en/2.10/maintaining/getting-started.html)"の手順に従い、CKANの初期設定を行う。
+[CKAN公式ドキュメントの初期設定手順](https://docs.ckan.org/en/2.10/maintaining/getting-started.html)に従い、CKANの初期設定を行う。
 
 #### ユーザの作成
 CKANの起動直後は管理者用アカウントしか存在しない。
@@ -115,19 +156,20 @@ CKANの起動直後は管理者用アカウントしか存在しない。
 
 新たなユーザを作成する場合、まず提供者カタログサイトに管理者としてログインする。
 
-[image]
+![CKANログインページに遷移する](./images/ckan_go_to_login.png)
+![CKAN管理者としてログイン](./images/ckan_admin_login.png)
 
 その後、`https://<CKANサイトドメイン>:<ポート番号>/user/register`というエンドポイントにアクセスすると、ユーザ作成画面に遷移する。
 この画面上で、ユーザ名・パスワードを設定し、データ提供者に対応するユーザを作成する。
 
-[image]
+![CKANユーザを作成する](./images/ckan_register_user.png)
 
 なお、CKAN上のユーザ名・パスワードは必ずしもCADDEユーザのユーザ名・パスワードと一致していなくともよいが、同じものを設定することを推奨する。
 また、ユーザ作成時に入力するメールアドレスについては、メールサーバと連携しない場合には不要であるため、適当な文字列を入力すればよい。
 
 `https://<CKANサイトドメイン>:<ポート番号>/user`にアクセスして、作成したユーザが一覧に含まれていることを確認できれば完了である。
 
-[image]
+![CKANユーザ一覧](./images/ckan_user_list.png)
 
 
 #### 組織（Organization）の作成
@@ -135,19 +177,38 @@ CKANではデータカタログを組織単位（Organizations）でまとめる
 
 そこで、CKANサイト上でCADDEテストベッドに参加している組織（WireGuardサイト）に対応する新たな組織を作成する。
 
-新たな組織を作成する場合、[上記](#ユーザの作成)で作成したユーザでCKANサイトにログインする。
-
-[image]
+新たな組織を作成する場合、[上記](#ユーザの作成)で作成したユーザでCKANサイトにログインする（管理者アカウントでないことに注意）。
 
 その後、画面上部`Organizations`メニューに遷移し、`Add Organization`から新たな組織を作成する。
 
-[image]
+![CKAN Organizationsメニュー](./images/ckan_organization_list_init.png)
 
 組織情報の入力画面では、組織名として各WireGuardサイトのsitenameに対応する英文字列を入力することを推奨する。
 例えば、東京大学越塚研究室のWireGuardサイト上で構築されるデータ提供者環境では、`koshizukalab`を入力する。
-また、組織の説明欄（Description）は任意で入力すれば良い。
+また、組織の説明欄（Description）は任意で入力すればよい。
+
+![CKAN Organizationを追加する](./images/ckan_add_organization.png)
 
 画面上部`Organizations`メニューに遷移し、作成した組織が一覧に含まれていることを確認できれば完了である。
+
+
+#### CKAN APIキーの作成
+一部のCKAN APIを利用するためには、CKAN APIキーが必要となる。
+
+以下にCKAN APIキーの取得手順を示す。
+
+まず、CKANサイトにユーザログインした状態で、画面右上からユーザページに遷移する。
+
+![CKANトップページからユーザページに遷移する](./images/ckan_go_to_user_page.png)
+
+次にユーザページ上部のメニューから`API Tokens`を選択し、発行するAPIキーの名前を入力する。
+
+![APIキーの名前を入力する](./images/ckan_api_token1.png)
+
+`Create API Token`を押すと、新たなAPIキーが発行される。
+このAPIキーはこの画面でしか表示されないため、後で利用するために記録しておく。
+
+![APIキーを発行する](./images/ckan_api_token2.png)
 
 
 ### 1.1.3. CKANの動作確認
@@ -166,10 +227,10 @@ CKAN公式ドキュメント[API guide](https://docs.ckan.org/en/2.10/api/index.
   - `/api/action/package_search?q=<検索キーワード>`
 
 
-### 1.1.4. 横断検索機能への登録申請
+<!-- ### 1.1.4. 横断検索機能への登録申請 -->
 <!-- TODO -->
 
-横断検索機能が提供者カタログサイトをクローリング対象として登録するための申請を行う。
+<!-- 横断検索機能が提供者カタログサイトをクローリング対象として登録するための申請を行う。
 
 横断検索機能は東京大学越塚研究室が管理しているため、CADDEテストベッド参加者は以下の情報を越塚研究室の担当者に送付する。
 - 提供者カタログサイト名
@@ -177,7 +238,7 @@ CKAN公式ドキュメント[API guide](https://docs.ckan.org/en/2.10/api/index.
 - 提供者カタログサイトのドメイン名
   - 例：`cadde-catalog-test1.koshizukalab.dataspace.internal`
 
-横断検索機能の登録完了通知を受け取り、横断検索サイト上で自身が提供するデータカタログの閲覧・検索ができることを確認できれば完了である。
+横断検索機能の登録完了通知を受け取り、横断検索サイト上で自身が提供するデータカタログの閲覧・検索ができることを確認できれば完了である。 -->
 
 
 ## 1.2. 認可機能
@@ -186,16 +247,17 @@ CKAN公式ドキュメント[API guide](https://docs.ckan.org/en/2.10/api/index.
 GitHubからCADDEコネクタリポジトリをクローンする。
 
 ```bash
-$ git clone git@github.com:Koshizuka-lab/klab-connector-v4.git
-$ cd ${WORKDIR}/klab-connector-v4
-$ git checkout -b dev-klab origin/dev-klab
+$ cd ${WORKDIR}
+$ git clone https://github.com/Koshizuka-lab/klab-connector-v4.git
+$ cd klab-connector-v4
+$ git switch testbed
 ```
 
-ブランチが`dev-klab`であることを確認する。
+ブランチが`testbed`であることを確認する。
 ```bash
-$ git branch -l
-* dev-klab
-  master
+$ git branch
+  main
+* testbed
 ```
 
 `klab-connector-v4/misc/authorization`に認可機能用ソースコードが配置してある。
@@ -306,7 +368,7 @@ services:
 }
 ```
 
-また、認証機能との連携に伴い、認可機能上で認証機能のサーバ証明書を信頼するための設定を行う必要がある。
+<!-- また、認証機能との連携に伴い、認可機能上で認証機能のサーバ証明書を信頼するための設定を行う必要がある。
 
 まず、認証機能のCA証明書を配置するためのディレクトリを作成する。
 ```bash
@@ -320,11 +382,10 @@ $ mkdir ${WORKDIR}/klab-connector-v4/misc/authorization/certs
 ```bash
 $ ls ${WORKDIR}/klab-connector-v4/misc/authorization/certs
 cacert.pem
-```
+``` -->
 
-次に、認証機能FastAPIコンテナおよびKeycloakコンテナ内部にCA証明書を配置するための設定を以下のファイルで行う。
+<!-- 次に、認証機能FastAPIコンテナおよびKeycloakコンテナ内部にCA証明書を配置するための設定を以下のファイルで行う。
 - `klab-connector-v4/misc/authorization/docker-compose.yml`
-
 
 設定すべきパラメータは以下の通り。
 - services
@@ -365,10 +426,11 @@ services:
       && keytool -importkeystore -noprompt -srckeystore cacert.jks -srcstorepass testbed -destkeystore cacert.p12 -deststoretype PKCS12 -deststorepass testbed
       && /opt/keycloak/bin/kc.sh start-dev"
     # command: start-dev
-```
+``` -->
 
 
 ### 1.2.5. 認可機能の起動
+<!-- TODO: 提供者コネクタより後に起動する -->
 以下のコマンドを実行し、認可機能用のDockerコンテナ群を起動する。
 ```bash
 $ cd ${WORKDIR}/klab-connector-v4/misc/authorization
@@ -376,6 +438,7 @@ $ sh ./start.sh
 ```
 
 認可機能の起動状況は以下のコマンドで確認できる。
+4つのコンテナすべてが立ち上がっていれば、認可機能の起動は完了である。
 ```bash
 $ cd ${WORKDIR}/klab-connector-v4/misc/authorization
 $ docker compose ps
@@ -405,16 +468,9 @@ CADDE認証機能認証サーバのURL: https://cadde-authn.koshizukalab.dataspa
 
 次のようなメッセージが出力されていれば、正常に初期セットアップが行われたこととなる。
 ```bash
-----------アドミンのアクセストークン取得----------
-アドミンのアクセストークン取得成功
-----------レルム設定----------
-# レルム作成
-レルムを作成しました
-...（省略）...
-## アイデンティティプロバイダーのUUIDの取得
-アイデンティティプロバイダーのUUID: XXXX
-## Token Exchangeに関わるパーミッションの設定
-Token Exchangeに関わるパーミッションを設定しました
+〇レルムtest1の作成に成功しました
+〇クライアントprovider-test1の作成に成功しました
+〇アイデンティティプロバイダーの作成に成功しました　Userinfo URL: https://cadde-authn.koshizukalab.dataspace.internal:18443/keycloak/realms/authentication/protocol/openid-connect/userinfo
 ```
 
 最後に、入力した設定項目が`settings_provider_setup.json`に記入されていることを確認する。
@@ -434,19 +490,22 @@ $ sh ./stop.sh
 ## 1.3. 提供者コネクタ
 
 ### 1.3.1. ソースコードの取得
+※ [認可機能構築時](#12-認可機能)にCADDEコネクタリポジトリをクローンしていれば再度取得する必要はない。
+
 GitHubからCADDEコネクタリポジトリをクローンする。
 
 ```bash
-$ git clone git@github.com:Koshizuka-lab/klab-connector-v4.git
+$ cd ${WORKDIR}
+$ git clone https://github.com/Koshizuka-lab/klab-connector-v4.git
 $ cd klab-connector-v4
-$ git checkout -b dev-klab origin/dev-klab
+$ git switch testbed
 ```
 
-ブランチが`dev-klab`であることを確認する。
+ブランチが`testbed`であることを確認する。
 ```bash
-$ git branch -l
-* dev-klab
+$ git branch
   main
+* testbed
 ```
 
 `klab-connector-v4/src/provider`に提供者コネクタ用ソースコードが配置してある。
@@ -465,6 +524,7 @@ $ sh setup.sh
 そこで、リバースプロキシ上でTLSサーバ証明書の設定を行う。
 
 #### 秘密鍵・サーバ証明書の準備
+<!-- TODO: ドキュメントとリポジトリの状態の辻褄を合わせる（sslを消す） -->
 [certificate.md](certificate.md)に基づき、CADDEテストベッド参加サイト用の秘密鍵とワイルドカード証明書のペアを作成する。
 
 秘密鍵とワイルドカード証明書の作成後、それらを配置するためのディレクトリを作成する。
@@ -498,30 +558,26 @@ cacert.pem server.crt  server.key
 
 
 ### 1.3.4. データカタログの接続設定
+詳細検索カタログをコネクタ経由で公開するため、詳細検索カタログのCKANサイトURLを以下のファイルに設定する。
+- `klab-connector-v4/connector-main/swagger_server/configs/provider_ckan.json`
 
-設定ファイルの一覧は以下の通り。
-
-| コンフィグファイル | 概要 |
-| :------------  | :----- |
-| provider_ckan.json | 横断検索・詳細検索カタログCKANサーバのアクセス設定 |
-| authorization.json | [**認可設定時**] 認可機能URLの設定 |
-| connector.json | [**認可設定時**]　提供者コネクタ設定 |
-| provenance.json | [**来歴管理設定時**] 来歴管理サーバURLの設定 |
-
-
-詳細検索カタログをコネクタ経由で公開するため、詳細検索カタログのCKANサイトURLを設定ファイルに記載する。
-
-パス: `connector-main/swagger_server/configs/provider_ckan.json`
+設定すべきパラメータは以下の通り。
 
 | 設定パラメータ | 概要 |
 | :---------- | :---- |
 | release_ckan_url | 横断検索用データカタログのURL |
 | detail_ckan_url | 詳細検索用データカタログのURL |
 | authorization | 詳細検索用データカタログアクセス時の認可確認有無 |
-| packages_search_for_data_exchange | データ取得時の交換実績記録用リソースID検索を行うか否かを設定 |
+| packages_search_for_data_exchange | データ取得時の交換実績記録用リソースID検索を行うか否か |
 
-(記入例)
-```json:provider_ckan.json
+ここで、横断検索用データカタログ・詳細検索用データカタログとは、いずれもデータ提供者環境に構築される提供者カタログサイトを指すことに注意。
+
+[上記の提供者カタログサイトの構築手順](#11-提供者カタログサイト)では、横断検索用・詳細検索用データカタログを1つのCKANサイトで提供することを想定しているため、`release_ckan_url`と`detail_ckan_url`には、どちらも提供者カタログサイトのURLを記入すれば良い。
+
+（横断検索用・詳細検索用データカタログを異なる2つのCKANサイトで提供するパターンも存在する。詳しくは[CADDE公式の技術仕様](https://github.com/CADDE-sip/documents)を参照すること。）
+
+以下に設定例を示す。
+```json
 {
     "release_ckan_url": "https://cadde-catalog-test1.koshizukalab.dataspace.internal:8443",
     "detail_ckan_url": "https://cadde-catalog-test1.koshizukalab.dataspace.internal:8443",
@@ -530,35 +586,36 @@ cacert.pem server.crt  server.key
 }
 ```
 
-### 1.3.5. データサーバ（HTTP）の接続設定
-提供データをコネクタ経由で公開するため、HTTPサーバのURLを設定ファイルに記載する。
 
-パス: `src/provider/connector-main/swagger_server/configs/http.json`
+<!-- ### 1.3.5. データサーバ（HTTP）の接続設定
+提供データをコネクタ経由で公開するため、HTTPサーバのURLを以下のファイルに設定する。
+- `klab-connector-v4/src/provider/connector-main/swagger_server/configs/http.json`
 
-この設定ファイルはコネクタ経由で公開するデータを追加するたびに編集する。
-詳細はXXX.mdで述べる。（X.Y.Z節参照）
+この設定ファイルはコネクタ経由で公開するデータを追加するたびに編集する。 -->
 
 
-### 1.3.6. 認可機能の接続設定
-リソース提供時に認可確認を行う場合に、認可機能URLを設定する。[認可機能の構築方法はこちら](#31-認可機能構築手順)
+### 1.3.5. 認可機能の接続設定
+リソース提供時に認可確認を行う場合に、認可機能URLを以下のファイルに設定する。
+- `klab-connector-v4/src/provider/authorization/swagger_server/configs/authorization.json`
 
-パス: `src/provider/authorization/swagger_server/configs/authorization.json`
+設定すべきパラメータは以下の通り。
 
 | 設定パラメータ | 概要 |
 | :---------- | :---- |
 | authorization_server_url | 認可機能のアクセスURL |
 
-(記入例)
-```json:authorization.json
+以下に設定例を示す。
+```json
 {
-     "authorization_server_url": "<認可機能URL>"
+     "authorization_server_url" : "http://cadde-authz-test1.koshizukalab.dataspace.internal:5080"
 }
 ```
 
 また、認可機能の利用には提供者コネクタの情報が必要である。
-提供者コネクタのクライアントIDとシークレットは認可機能（≠認証機能）発行のものを用いることに注意が必要である。
+これを以下のファイルに設定する。
+- `klab-connector-v4/src/provider/connector_main/swagger_server/configs/connector.json`
 
-パス: `src/provider/connector_main/swagger_server/configs/connector.json`
+設定すべきパラメータは以下の通り。
 
 | 設定パラメータ                     | 概要                                  |
 | :------------------------------ | :----------------------------------- |
@@ -567,54 +624,66 @@ cacert.pem server.crt  server.key
 | provider_connector_secret | 提供者コネクタのクライアントシークレット |
 | trace_log_enable | コネクタの詳細ログ出力有無（出力無の設定でも基本的な動作ログは出力される） |
 
-TODO: 認可機能・コネクタの構築順を検討する
+なお、提供者コネクタのクライアントIDとシークレットは認可機能（≠認証機能）発行のものを用いることに注意する。
 
-```json:connector.json
+以下に設定例を示す。
+```json
 {
-    "provider_id" : "<提供者ID>",
-    "provider_connector_id" : "<提供者コネクタ クライアントID>",
-    "provider_connector_secret" : "<提供者コネクタ クライアントシークレット>",
+    "provider_id" : "test1",
+    "provider_connector_id" : "provider-test1",
+    "provider_connector_secret" : "XXX",
     "trace_log_enable" : true
 }
 ```
 
-### 1.3.7. 来歴管理の接続設定（WIP）
-来歴管理機能を利用する場合、来歴管理サーバURLを設定ファイルに記載する。
+### 1.3.6. 来歴管理の接続設定
+来歴管理機能を利用する場合、来歴管理サーバURLを以下のファイルに設定する。
+- `klab-connector-v4/src/provider/provenance-management/swagger_server/configs/provenance.json`
 
-パス: `src/provider/provenance-management/swagger_server/configs/provenance.json`
+設定すべきパラメータは以下の通り。
 
 | 設定パラメータ                     | 概要                                  |
 | :------------------------------ | :----------------------------------- |
-| provenance_management_api_url | 来歴管理サーバURL |
+| provenance_management_api_url | 来歴管理機能APIのベースURL |
 
-```json:provenance.json
+以下に設定例を示す。
+```json
 {
     "provenance_management_api_url": "http://cadde-provenance-management.koshizukalab.dataspace.internal:3000/v2"
 }
 ```
 
-### 1.3.8. その他カスタマイズ可能な項目
-- ポート番号
-- TODO: 他には？
 
-### 1.3.9. 提供者コネクタの起動
+### 1.3.7. その他カスタマイズ可能な項目
+
+#### 提供者コネクタのポート番号
+`docker-compose.yml`を編集することで、提供者コネクタを起動する際のポート番号を変更することができる。
+
+以下の例では提供者コネクタをホストマシンの80, 443番で立ち上げ、コンテナの80, 443番ポートにそれぞれフォワーディングしている。
+```yaml
+...
+services:
+  provider-reverse-proxy:
+    ports:
+      - 443:443
+      - 80:80
+```
+
+
+### 1.3.8. 提供者コネクタの起動
 以下のコマンドを実行し、提供者コネクタ用のDockerコンテナ群を起動する。
 ```bash
 $ cd ${WORKDIR}/klab-connector-v4/src/provider
 $ sh ./start.sh
 ```
 
-起動した提供者コネクタの構成は以下の通り。
-![提供者コネクタ構成](./images/producer.png)
-
 提供者コネクタの起動状況は以下のコマンドで確認できる。
+6つのコンテナすべてが立ち上がっていれば、提供者コネクタの起動は完了である。
 ```bash
 $ cd ${WORKDIR}/klab-connector-v4/src/provider
 $ docker compose ps
 ...
 ```
-
-提供者コネクタが起動できれば、[usage.mdに記載された提供者コネクタの使い方](./usage.md#提供者)を参考に、データ提供のための準備を行う。
 
 ### （参考）提供者コネクタの停止
 提供者コネクタを停止したい場合は、以下のコマンドを実行する。
@@ -633,7 +702,34 @@ $ sh ./stop.sh
 
 本章では、コネクタを経由したデータ提供を行うために、データ提供者が事前に準備する必要のある設定について説明する。
 
-## 2.1. データカタログの作成
+## 2.1. データ原本情報の登録
+来歴管理機能を用いてデータの流通経路を記録する場合、データ提供者は最初に自身の提供データの原本情報を登録する必要がある。
+データの原本情報は、データ提供者の情報や提供データのURL、データのハッシュ値などを含む。
+
+来歴管理機能の履歴登録APIを用いてデータの原本情報を新たに登録する実行例を以下に示す。
+
+リクエストボディに登録するイベントおよびデータをマルチパート形式で指定する。
+
+マルチパートの1つ目のパートには記録するイベントをJSON形式で格納する。
+原本情報を登録する場合は、`cdleventtype`を`Create`に指定した上で、データ提供者のIDや提供データのURLを記述する。
+
+また、マルチパートの2つ目のパートにはデータ本体を格納するため、提供データファイルのパスを指定する。
+そのため、前もってデータ提供者環境に提供データをダウンロードしておく必要があることに注意する。
+
+```bash
+$ curl -v -X POST "<来歴管理機能APIのベースURL>/eventwithhash" \
+-F "request=@<(echo '{\"cdldatamodelversion\": \"2.0\", \"cdleventtype\": \"Create\", \"dataprovider\": \"'<データ提供者のCADDEユーザID>'\", \"cdldatatags\": [{\"cdluri\": \"'<データURL>'\"}]}')" \
+-F "upfile=@<提供データファイルのパス>;type=text/plain" \
+| jq '.'
+```
+
+上記コマンドの実行に成功すると、データ原本情報の登録イベントを識別するIDが返される。
+このIDは[2.2. データカタログの作成](#22-データカタログの作成)で用いるため、記録しておく。
+
+なお、来歴管理機能APIの詳細な仕様は、[CADDE公式の技術仕様](https://github.com/CADDE-sip/documents)を参照すること。
+
+
+## 2.2. データカタログの作成
 データ利用者は横断検索カタログサイトまたは提供者カタログサイトにアクセスして、取得したいデータを検索・発見する。
 そのため、データ提供者は自らが管理する提供者カタログサイトにデータカタログを作成する必要がある。
 ここで作成した提供者カタログは、横断検索機能によってクローリングされ、横断検索カタログサイトにも登録される。
@@ -657,8 +753,10 @@ $ sh ./stop.sh
 データカタログを作成する際は、データセットのタイトルなどのメタデータを設定していく。
 ここで、CADDE上で流通するデータカタログには、詳細検索を行うための独自の拡張項目が定められており、以下2つの項目を設定する必要がある。
 
-- `caddec_dataset_id_for_detail`: データセットの識別子
-- `caddec_provider_id`: データ提供者のCADDEユーザID
+- `caddec_dataset_id_for_detail`
+  - データセットの識別子
+- `caddec_provider_id`
+  - データ提供者のCADDEユーザID
 
 これらの拡張項目はデータカタログ作成ページの一番下に存在する`Custom Field`の箇所で設定する。
 
@@ -676,6 +774,62 @@ CKANサイトでのデータの登録方法は、CKAN自体に提供データを
 
 データに関する情報の入力が完了して`Finish`を押すと、データカタログの登録が完了となる。
 なお、1つのデータセットに複数のデータを登録する場合は、`Save & add another`を押し別のデータの登録を続ける。
+
+
+### リソースに対する拡張項目の設定
+上記において、データセットに対して詳細検索用のCADDE独自拡張項目を追加で入力した。
+
+これと同様に、CADDE上でのデータ取得のためには、データセットに含まれる各リソースについても、以下の拡張項目を追加する必要がある。
+
+<!-- - `caddec_resource_type`
+  - データサーバにアクセスするためのプロトコル（HTTP, FTP, NGSI）
+  - 各プロトコルに対して設定すべき値は以下の通り
+    - HTTP：`file/http`
+    - FTP：`file/ftp`
+    - NGSI：`api/ngsi`
+- `caddec_contract_required`
+  - データ取得の際にデータ利用契約を確認するか否か
+  - 値：`notRequired` or `required`
+  - CADDEテストベッドはデータ取引市場を含まないため、`notRequired`を選択する
+- `caddec_required`
+  - データ取得の際に利用者コネクタが必要であるか否か
+  - 値：`notRequired` or `required`
+  - CADDEテストベッドでは`required`を選択することを推奨する -->
+- `caddec_resource_id_for_provenance`
+  - 提供者コネクタによるデータ送信来歴の作成時、データの原本情報を参照するために割り当てる来歴の識別子
+  - [2.1. データ原本情報の登録](#21-データ原本情報の登録)で取得したイベントIDを指定する
+
+
+なお、上記のリソースに対する拡張項目は、CKANサイトの仕様上、CKAN APIでしか設定することができない。
+
+以下にCKAN APIを用いてリソースの拡張項目を設定する実行例を示す。
+
+```bash
+$ curl -v -sS -X POST "https://<提供者カタログサイトのFQDN>:<ポート番号>/api/3/action/resource_patch" \
+-H "Authorization: <CKAN APIキー>" \
+-d '{"id": "<リソースID>", "caddec_resource_id_for_provenance": "<原本情報登録イベントID>"}' \
+| jq '.'
+```
+
+`Authorization`ヘッダでCKAN APIキー（上記[CKAN APIキーの作成](#ckan-apiキーの作成)を参照）、リクエストボディにCKAN上のリソースを識別するIDと原本情報登録イベントIDを指定する。
+
+なお、リソースIDはCKANサイトのリソースページから、`Additional Information`の表で確認できる。
+
+![CKANリソースページ](./images/ckan_resource_page.png)
+
+上記コマンドを実行すると、リソースの情報を格納したJSONオブジェクトが返される。
+`success`キーに対応する値が`true`となっていれば、設定が完了となる。
+```json
+{
+  "help": "https://<提供者カタログサイトのFQDN>:<ポート番号>/api/3/action/resource_patch",
+  "success": true,
+  "result": {
+    "caddec_resource_id_for_provenance": "<原本情報登録イベントID>",
+    ...
+    "id": "<リソースID>",
+  }
+}
+```
 
 
 ## 2.2. 認可の設定
@@ -713,6 +867,7 @@ CKANサイトでのデータの登録方法は、CKAN自体に提供データを
 
 ![認可登録画面](./images/authz_registration.png "認可登録")
 
+
 ### （参考）認可一覧メニュー
 認可一覧メニューでは、設定した認可がリソースURLごとに表示される。
 リソースURLの部分を押下することで、選択したリソースの認可の詳細を確認できる。
@@ -725,6 +880,7 @@ CKANサイトでのデータの登録方法は、CKAN自体に提供データを
 リソースURLに紐づくすべての認可を削除した場合、認可一覧から対象URLが削除される。
 
 ![認可詳細画面](./images/authz_detail.png "認可詳細")
+
 
 ### （参考）認可機能の設定メニュー
 認可機能の設定メニューでは、以下の3つの設定項目の確認・変更が可能である。
@@ -741,9 +897,8 @@ CKANサイトでのデータの登録方法は、CKAN自体に提供データを
 
 
 ## 2.3. データサーバの接続設定
-コネクタを介したデータ提供を行うためには、提供者コネクタ上で自身が提供するデータに関する情報を設定する必要がある。
-
-パス: `src/provider/connector-main/swagger_server/configs/http.json`
+コネクタを介したデータ提供を行うためには、提供者コネクタ上で自身が提供するデータに関する情報を以下のファイルに設定する。
+- `klab-connector-v4/src/provider/connector-main/swagger_server/configs/http.json`
 
 本設定ファイルでは以下の4つの項目を設定する。
 - `basic_auth`
@@ -759,7 +914,6 @@ CKANサイトでのデータの登録方法は、CKAN自体に提供データを
 - `register_provenance`
   - 提供データのURLとデータ送信来歴の登録有無を設定する
   - データ利用者から要求されたデータに関する設定が存在しない場合、trueとして動作する
-  <!-- - TODO：CADDEテストベッドは来歴管理機能を含まないため、提供データを追加するたびにfalseを設定することとする -->
 
 以下に設定例を示す。
 ```json
@@ -795,9 +949,9 @@ CKANサイトでのデータの登録方法は、CKAN自体に提供データを
 ]
 ```
 
-# 3. 動作確認
+<!-- # 3. 動作確認
 - XXX.mdを参照
   - データ利用者から詳細検索
     - 詳細検索カタログの認可を行わないといけない
   - データ利用者からデータ取得（認可なし）
-  - データ利用者からデータ取得（認可あり）
+  - データ利用者からデータ取得（認可あり） -->

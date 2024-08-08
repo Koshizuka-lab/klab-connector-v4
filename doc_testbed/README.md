@@ -1,4 +1,4 @@
-# CADDEテストベッド参加資料 (WIP)
+# CADDEテストベッド参加用資料
 本資料は、データスペース技術国際テストベッド(以下、ITDT)上に構築される、CADDEテストベッドへの参加時に必要となる準備事項・環境構築手順を示すものである。
 
 本ディレクトリに含まれる資料は、CADDE公式の技術仕様を参考としつつ、説明の都合上、一部を省略・追加するなどの改変を行っているものである。<br/>
@@ -184,6 +184,6 @@ TLS証明書を取得するための詳細な手順は[certificate.md](./certifi
 | :---------- | :---- |
 | [provider.md](./provider.md) | データ提供者環境の構築手順 |
 | [consumer.md](./consumer.md) | データ利用者環境の構築手順 |
-| [operation_check.md](./operation_check.md) | CADDE参加者環境の動作確認手順 |
 | [certificate.md](./certificate.md) | CADDEテストベッド用TLS証明書の取得方法 |
 | [handson.md](./handson.md) | CADDEテストベッドハンズオン手順 |
+<!-- | [operation_check.md](./operation_check.md) | CADDE参加者環境の動作確認手順 | -->

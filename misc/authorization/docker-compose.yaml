@@ -1,5 +1,3 @@
-version: '3'
-
 networks:
   provider_default:
     external: true

@@ -4,17 +4,29 @@
         {
             "url": "https://drive.google.com/uc?export=download&id=1SdmM4cmqo_8TEBF-liGX-xLsWOhuc3md",
             "enable": true
+        },
+        {
+            "url": "http://data-management.test1.internal:8080/hello.txt",
+            "enable": false
         }
     ],
     "contract_management_service": [
         {
             "url": "https://drive.google.com/uc?export=download&id=1SdmM4cmqo_8TEBF-liGX-xLsWOhuc3md",
             "enable": false
+        },
+        {
+            "url": "http://data-management.test1.internal:8080/hello.txt",
+            "enable": false
         }
     ],
     "register_provenance": [
         {
             "url": "https://drive.google.com/uc?export=download&id=1SdmM4cmqo_8TEBF-liGX-xLsWOhuc3md",
+            "enable": true
+        },
+        {
+            "url": "http://data-management.test1.internal:8080/hello.txt",
             "enable": false
         }
     ]

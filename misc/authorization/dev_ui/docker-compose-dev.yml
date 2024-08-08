@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   dev-vue:
     image: dev-vue:2022

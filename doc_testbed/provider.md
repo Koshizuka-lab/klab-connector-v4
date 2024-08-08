@@ -524,7 +524,6 @@ $ sh setup.sh
 そこで、リバースプロキシ上でTLSサーバ証明書の設定を行う。
 
 #### 秘密鍵・サーバ証明書の準備
-<!-- TODO: ドキュメントとリポジトリの状態の辻褄を合わせる（sslを消す） -->
 [certificate.md](certificate.md)に基づき、CADDEテストベッド参加サイト用の秘密鍵とワイルドカード証明書のペアを作成する。
 
 秘密鍵とワイルドカード証明書の作成後、それらを配置するためのディレクトリを作成する。
@@ -537,10 +536,18 @@ $ mkdir ${WORKDIR}/klab-connector-v4/src/provider/nginx/volumes/ssl
 上で作成したディレクトリに秘密鍵とワイルドカード証明書のファイルをそれぞれ`server.key`、`server.crt`というファイル名で配置する
 （ただし、これらのファイル名はNginxの設定ファイルを編集することで変更可能）。
 
+<!-- なお、秘密鍵・ワイルドカード証明書はいずれもリバースプロキシ用コンテナ内部にマウントされるため、コンテナ内のユーザから読み取りできるようにファイルのアクセス権限を変更しておく。
+```bash
+$ chmod +r ${WORKDIR}/klab-connector-v4/src/provider/nginx/volumes/ssl/server.key
+$ chmod +r ${WORKDIR}/klab-connector-v4/src/provider/nginx/volumes/ssl/server.crt
+``` -->
+
 ディレクトリが以下の状態になれば完了である。
 ```bash
-$ ls ${WORKDIR}/klab-connector-v4/src/provider/nginx/volumes/ssl
-server.crt  server.key
+$ ls -l ${WORKDIR}/klab-connector-v4/src/provider/nginx/volumes/ssl
+total 20
+-rw-r--r-- 1 ubuntu ubuntu 6200 Aug  7 02:56 server.crt
+-rw-r--r-- 1 ubuntu ubuntu 3272 Aug  7 02:56 server.key
 ```
 
 #### クライアント認証用CA証明書の準備
@@ -581,7 +588,7 @@ cacert.pem server.crt  server.key
 {
     "release_ckan_url": "https://cadde-catalog-test1.koshizukalab.dataspace.internal:8443",
     "detail_ckan_url": "https://cadde-catalog-test1.koshizukalab.dataspace.internal:8443",
-    "authorization": true,
+    "authorization": false,
     "packages_search_for_data_exchange": true
 }
 ```
@@ -682,7 +689,6 @@ $ sh ./start.sh
 ```bash
 $ cd ${WORKDIR}/klab-connector-v4/src/provider
 $ docker compose ps
-...
 ```
 
 ### （参考）提供者コネクタの停止
@@ -694,12 +700,6 @@ $ sh ./stop.sh
 
 
 # 2. データ提供設定
-<!-- - （来歴管理機能にデータの原本登録をする）
-- （横断検索カタログに登録申請する）
-- 提供者カタログにデータカタログを作成する
-- 認可機能に認可を設定する
-- 提供者コネクタにデータを登録する -->
-
 本章では、コネクタを経由したデータ提供を行うために、データ提供者が事前に準備する必要のある設定について説明する。
 
 ## 2.1. データ原本情報の登録
@@ -730,6 +730,7 @@ $ curl -v -X POST "<来歴管理機能APIのベースURL>/eventwithhash" \
 
 
 ## 2.2. データカタログの作成
+<!-- TODO: Image 差し替え -->
 データ利用者は横断検索カタログサイトまたは提供者カタログサイトにアクセスして、取得したいデータを検索・発見する。
 そのため、データ提供者は自らが管理する提供者カタログサイトにデータカタログを作成する必要がある。
 ここで作成した提供者カタログは、横断検索機能によってクローリングされ、横断検索カタログサイトにも登録される。
@@ -738,19 +739,21 @@ $ curl -v -X POST "<来歴管理機能APIのベースURL>/eventwithhash" \
 
 まず、[1.1.2. CKANの初期設定](#112-ckanの初期設定)で作成したユーザでCKANサイトにログインする。
 
-![カタログサイトトップページ](./images/catalog_top.png)
+![カタログサイトトップページ](./images/ckan_go_to_login.png)
 
 ログイン後、[1.1.2. CKANの初期設定](#112-ckanの初期設定)で作成したOrganizationの配下にデータカタログを追加していく。
 
 画面上部メニューの`Organizations`から登録されているOrganizationの一覧ページに遷移し、さらに自ら登録したOrganizationのページに遷移する。
 
-![カタログサイトOrganizations一覧](./images/catalog_organization.png)
+![カタログサイトOrganizations](./images/ckan_my_organization.png)
 
 `Add Dataset`を押下して新たなデータカタログを作成する。
 
-![カタログサイトklabデータセット一覧](./images/catalog_dataset.png)
-
 データカタログを作成する際は、データセットのタイトルなどのメタデータを設定していく。
+
+また、横断検索機能によるクローリングが可能となるよう`Visibility`の欄は`Public`に変更しておく。
+![CKAN catalog visibility](./images/ckan_visibility.png)
+
 ここで、CADDE上で流通するデータカタログには、詳細検索を行うための独自の拡張項目が定められており、以下2つの項目を設定する必要がある。
 
 - `caddec_dataset_id_for_detail`
@@ -832,7 +835,7 @@ $ curl -v -sS -X POST "https://<提供者カタログサイトのFQDN>:<ポー�
 ```
 
 
-## 2.2. 認可の設定
+## 2.3. 認可の設定
 データ提供者は自身の提供データに対する認可条件を設定することでデータ共有時のアクセス制御を行う。
 
 まず、事前に設定した自身の認可機能のURLを用いて、ブラウザから認可機能GUIにアクセスする。
@@ -896,7 +899,7 @@ $ curl -v -sS -X POST "https://<提供者カタログサイトのFQDN>:<ポー�
 ![認可機能設定画面](./images/authz_settings.png "認可機能の設定")
 
 
-## 2.3. データサーバの接続設定
+## 2.4. データサーバの接続設定
 コネクタを介したデータ提供を行うためには、提供者コネクタ上で自身が提供するデータに関する情報を以下のファイルに設定する。
 - `klab-connector-v4/src/provider/connector-main/swagger_server/configs/http.json`
 

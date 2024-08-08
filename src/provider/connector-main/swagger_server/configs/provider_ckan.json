@@ -1,6 +1,6 @@
 {
     "release_ckan_url": "<横断検索用カタログサイトURL>",
     "detail_ckan_url": "<詳細検索用カタログサイトURL>",
-    "authorization": true,
+    "authorization": false,
     "packages_search_for_data_exchange": true
 }

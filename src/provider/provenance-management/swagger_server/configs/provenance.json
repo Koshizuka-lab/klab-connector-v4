@@ -1,3 +1,3 @@
 {
-    "provenance_management_api_url": "<来歴管理機能APIベースURL>"
+    "provenance_management_api_url": "http://cadde-provenance-management.koshizukalab.dataspace.internal:3000/v2"
 }

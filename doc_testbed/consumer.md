@@ -13,7 +13,7 @@ CADDEテストベッドの利用開始にあたって、テストベッド参加
 - [CADDEテストベッド用TLS証明書の取得](./README.md#caddeテストベッド用tls証明書の取得)
 
 ### 1.2. 実行環境
-<!-- TODO: 詳細に記述する -->
+
 データ利用者環境を構築するマシンは以下の条件を満たすことを前提とする。
 
 - OS：Linux
@@ -23,11 +23,11 @@ CADDEテストベッドの利用開始にあたって、テストベッド参加
 
 また、以下のコマンドおよびソフトウェアが利用可能であることを前提とする。
 
+- Docker（v20.10.1 以上）
+- Git
 - curl
 - jq
-- git
-- docker
-- openssl
+- OpenSSL（v1.1.1 以上）
 
 ## 2. インストール
 
@@ -36,7 +36,7 @@ CADDEテストベッドの利用開始にあたって、テストベッド参加
 - 利用者コネクタ
 - 利用者WebApp
 
-はじめに、これ以降の作業を行うディレクトリを作成し、以降のコマンドでは環境変数${WORKDIR}で参照することとする。
+はじめに、以降の作業用ディレクトリを作成し、環境変数`${WORKDIR}`で参照することとする。
 
 ```bash
 mkdir ~/cadde_testbed
@@ -170,14 +170,6 @@ total 20
 -rw-r--r-- 1 ubuntu ubuntu 3272 Aug  7 02:56 client.key
 -rw-r--r-- 1 ubuntu ubuntu 5021 Aug  7 03:01 squidCA.pem
 ```
-<!-- TODO: 引数でdnを入力する -->
-<!-- なお、証明書の作成過程でサーバの識別情報が聞かれるが、Common Name以外の項目はスキップまたは適当な文字列で設定すればよい。
-Common Nameは適当な文字列でよい。 -->
-
-<!-- ##### 外部ポートへのTLS通信を許可する -->
-<!-- ```
-acl SSL_ports port 1-65535
-``` -->
 
 ##### フォワードプロキシの初期セットアップ
 
@@ -218,18 +210,20 @@ docker compose -f docker-compose_initial.yml down
 ```
 
 #### 2.1.5. データカタログの接続設定
+<!-- TODO 横断検索機能のポート番号を修正 -->
 
 横断検索カタログから取得したいデータを検索するため、横断検索機能APIのURLを以下のファイルに設定する。
 
 - `klab-connector-v4/src/consumer/catalog-search/swagger_server/configs/public_ckan.json`
 
-設定すべきパラメータは以下の通り。
+ただし、横断検索機能に関する情報はCADDEテストベッド参加者で共通であるため、デフォルトの記載のまま変更しなくともよい。
 
-| 設定パラメータ | 概要 |
-| :---------- | :---- |
-| public_ckan_url | 横断検索機能APIのURL |
+以下の設定項目が存在する。
 
-以下に設定例を示す。
+- **`public_ckan_url`**
+  - 横断検索機能APIのURL
+
+以下にデフォルトの設定例を示す。
 
 ```json
 {
@@ -244,16 +238,20 @@ docker compose -f docker-compose_initial.yml down
 
 - `klab-connector-v4/src/consumer/connector-main/swagger_server/configs/connector.json`
 
-設定すべきパラメータは以下の通り。
+設定すべき項目は以下の通り。
 
-| 設定パラメータ | 概要 |
-| :--------- | :------- |
-| consumer_connector_id | 認証機能発行の利用者コネクタのクライアントID |
-| consumer_connector_secret | 認証機能発行の利用者コネクタのクライアントシークレット |
-| location_service_url | ロケーションサービスのアクセスURL |
-| trace_log_enable | コネクタの詳細ログ出力有無（出力無の設定でも基本的な動作ログは出力される） |
+- **`consumer_connector_id`**
+  - 利用者コネクタのクライアントID（認証機能から発行）
+- **`consumer_connector_secret`**
+  - 利用者コネクタのクライアントシークレット（認証機能から発行）
+- **`location_service_url`**
+  - ロケーションサービスのアクセスURL
+  - ロケーションサービスを利用しない場合、空文字`''`を設定する
+- **`trace_log_enable`**
+  - コネクタの詳細ログ出力有無
+  - デフォルト：`true`
 
-ただし、`location_service_url`については、CADDEテストベッドはロケーションサービスを含まないため、何も入力しないようにする。
+なお、CADDEテストベッドはロケーションサービスを含まないため、`location_service_url`の項目は空文字のままとしておく。
 
 以下に設定例を示す。
 
@@ -274,13 +272,12 @@ docker compose -f docker-compose_initial.yml down
 
 なお、ロケーションサービスを利用することで自動的に提供者コネクタのロケーションを解決することも可能であるが、CADDEテストベッドはロケーションサービスを含まないため、手動で提供者コネクタのロケーションを追記していく。
 
-設定すべきパラメータは以下の通り。
+設定すべき項目は以下の通り。
 
-| 設定パラメータ | 概要 |
-| :--------- | :------- |
-| connector_location | 提供者IDとコネクタURLのマッピング |
-| connector_location.<提供者ID> | CADDEユーザID(提供者) を記載する |
-| connector_location.<提供者ID>.provider_connector_url | 提供者コネクタのアクセスURL |
+- **`connector_location`**
+  - データ提供者のCADDEユーザID -> 提供者コネクタのアクセスURL
+  - フォーマット：`"<データ提供者ID>": { "provider_connector_url": "<提供者コネクタURL>" }`
+  - 接続先となる提供者コネクタの数だけ追記していく
 
 以下に設定例を示す。
 
@@ -301,13 +298,14 @@ docker compose -f docker-compose_initial.yml down
 
 - `klab-connector-v4/src/consumer/provenance-management/swagger_server/configs/provenance.json`
 
-設定すべきパラメータは以下の通り。
+ただし、来歴管理機能に関する情報はCADDEテストベッド参加者で共通であるため、デフォルトの記載のまま変更しなくともよい。
 
-| 設定パラメータ                     | 概要                                  |
-| :------------------------------ | :----------------------------------- |
-| provenance_management_api_url | 来歴管理機能APIのベースURL |
+以下の設定項目が存在する。
 
-以下に設定例を示す。
+- **`provenance_management_api_url`**
+  - 来歴管理機能APIのベースURL
+
+以下にデフォルトの設定例を示す。
 
 ```json
 {
@@ -338,7 +336,7 @@ services:
 
 ```bash
 cd ${WORKDIR}/klab-connector-v4/src/consumer
-sh ./start.sh
+sh start.sh
 ```
 
 利用者コネクタの起動状況は以下のコマンドで確認できる。
@@ -384,15 +382,23 @@ $ git branch
 利用者WebAppを利用するには、認証機能から割り当てられたWebAppのクライアント情報が必要となる。
 そこで、WebAppのクライアント情報を環境変数に設定する。
 
-ここでは`.env.local`ファイルを編集し、アプリケーションコード内で環境変数を読み込ませる。
+ここでは`.env.local`ファイルを編集し、アプリケーションコード内で環境変数を読み込ませる。<br/>
+まず、`.env`ファイルをコピーして`.env.local`ファイルを作成する。
 
 ```bash
-$ cd ${WORKDIR}/ut-cadde_gui
-$ cp .env .env.local
-$ vim .env.local
-CLIENT_ID=<WebAppクライアントID>
-CLEINT_SECRET=<WebAppクライアントシークレット>
+cd ${WORKDIR}/ut-cadde_gui
+cp .env .env.local
 ```
+
+`.env.local`ファイル内に記載すべき項目は以下の通り。
+
+- `AUTH_API_URL`
+  - 認証機能CADDE APIベースURL
+  - デフォルト：`https://cadde-authn.koshizukalab.dataspace.internal:18443/cadde/api/v4/`
+- `CLIENT_ID`
+  - 利用者WebAppのクライアントID
+- `CLIENT_SECRET`
+  - 利用者WebAppのクライアントシークレット
 
 #### 2.2.3. その他カスタマイズ可能な項目
 

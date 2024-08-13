@@ -1,10 +1,10 @@
 {
-  "provider_connector_id": "provider-example",
-  "client_id": "authz-example",
-  "client_secret": "XXX",
+  "provider_connector_id": "<提供者コネクタのクライアントID>",
+  "client_id": "<認可機能のクライアントID>",
+  "client_secret": "<認可機能のクライアントシークレット>",
   "authz_keycloak_url": "<認可機能KeycloakベースURL>",
-  "authn_url": "<認証機能APIベースURL>",
-  "authn_keycloak_url": "<認証機能KeycloakベースURL>",
+  "authn_url": "https://cadde-authn.koshizukalab.dataspace.internal:18443/cadde/api/v4",
+  "authn_keycloak_url": "https://cadde-authn.koshizukalab.dataspace.internal:18443/keycloak",
   "authn_realm_name": "authentication",
   "subject_issuer": "authentication"
 }

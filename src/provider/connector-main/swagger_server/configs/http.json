@@ -2,32 +2,32 @@
     "basic_auth": [],
     "authorization": [
         {
-            "url": "https://drive.google.com/uc?export=download&id=1SdmM4cmqo_8TEBF-liGX-xLsWOhuc3md",
+            "url": "https://example1.com/data.txt",
             "enable": true
         },
         {
-            "url": "http://data-management.test1.internal:8080/hello.txt",
+            "url": "https://example2.com/data.txt",
             "enable": false
         }
     ],
     "contract_management_service": [
         {
-            "url": "https://drive.google.com/uc?export=download&id=1SdmM4cmqo_8TEBF-liGX-xLsWOhuc3md",
+            "url": "https://example1.com/data.txt",
             "enable": false
         },
         {
-            "url": "http://data-management.test1.internal:8080/hello.txt",
+            "url": "https://example2.com/data.txt",
             "enable": false
         }
     ],
     "register_provenance": [
         {
-            "url": "https://drive.google.com/uc?export=download&id=1SdmM4cmqo_8TEBF-liGX-xLsWOhuc3md",
+            "url": "https://example1.com/data.txt",
             "enable": true
         },
         {
-            "url": "http://data-management.test1.internal:8080/hello.txt",
-            "enable": false
+            "url": "https://example2.com/data.txt",
+            "enable": true
         }
     ]
 }

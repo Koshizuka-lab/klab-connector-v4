@@ -35,7 +35,7 @@ services:
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
     entrypoint: /bin/sh -c "update-ca-certificates && python3 -m swagger_server"
     extra_hosts:
-      - "data-management.test1.internal:host-gateway"
+      - "data-management.siteXX.internal:host-gateway"
   provider-data-exchange:
     build: data-exchange
     image: provider/data-exchange:4.0.0

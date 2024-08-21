@@ -1,5 +1,31 @@
 # データ利用者環境の構築
 
+<!-- omit in toc -->
+## 目次
+
+- [1. 前提](#1-前提)
+  - [1.1. CADDEテストベッド参加のための事前準備](#11-caddeテストベッド参加のための事前準備)
+  - [1.2. 実行環境](#12-実行環境)
+- [2. インストール](#2-インストール)
+  - [2.1. 利用者コネクタ環境準備](#21-利用者コネクタ環境準備)
+    - [2.1.1. 利用者コネクタ取得](#211-利用者コネクタ取得)
+    - [2.1.2. 共通ファイルの展開](#212-共通ファイルの展開)
+    - [2.1.3. リバースプロキシの設定](#213-リバースプロキシの設定)
+    - [2.1.4. フォワードプロキシの設定](#214-フォワードプロキシの設定)
+    - [2.1.5. データカタログの接続設定](#215-データカタログの接続設定)
+    - [2.1.6. 認証機能の接続設定](#216-認証機能の接続設定)
+    - [2.1.7. 提供者コネクタの接続設定](#217-提供者コネクタの接続設定)
+    - [2.1.8. 来歴管理の接続設定](#218-来歴管理の接続設定)
+    - [2.1.9. その他カスタマイズ可能な項目](#219-その他カスタマイズ可能な項目)
+    - [2.1.10. 利用者コネクタの起動](#2110-利用者コネクタの起動)
+    - [2.1.11. （参考）利用者コネクタの停止](#2111-参考利用者コネクタの停止)
+  - [2.2. 利用者WebApp環境準備](#22-利用者webapp環境準備)
+    - [2.2.1. 利用者WebApp取得](#221-利用者webapp取得)
+    - [2.2.2. 環境変数の設定](#222-環境変数の設定)
+    - [2.2.3. その他カスタマイズ可能な項目](#223-その他カスタマイズ可能な項目)
+    - [2.2.4. 利用者WebAppの起動](#224-利用者webappの起動)
+    - [2.2.5. （参考）利用者WebAppの停止](#225-参考利用者webappの停止)
+
 ## 1. 前提
 
 ### 1.1. CADDEテストベッド参加のための事前準備
@@ -79,21 +105,24 @@ sh setup.sh
 #### 2.1.3. リバースプロキシの設定
 
 利用者コネクタに対する通信はHTTPSによる接続が推奨される。
-そこで、リバースプロキシ上でTLSサーバ証明書の設定を行う。
+
+そこで、CADDEテストベッド用TLS証明書をリバースプロキシに配置するための設定を行う。
 
 ##### 秘密鍵・サーバ証明書の準備
 
-[certificate.md](certificate.md)に従い、CADDEテストベッド参加サイト用の秘密鍵とワイルドカード証明書のペアを作成する。
+[CADDEテストベッド参加のための事前準備](#11-caddeテストベッド参加のための事前準備)で取得した秘密鍵・TLS証明書を配置するためのディレクトリを作成する。
 
-秘密鍵とワイルドカード証明書の作成後、それらを配置するためのディレクトリを作成する。
 このディレクトリはリバースプロキシ用Dockerコンテナにマウントされる。
 
 ```bash
 mkdir ${WORKDIR}/klab-connector-v4/src/consumer/nginx/volumes/ssl
 ```
 
-上で作成したディレクトリに秘密鍵とワイルドカード証明書のファイルをそれぞれ`server.key`、`server.crt`というファイル名で配置する
-（ただし、これらのファイル名はNginxの設定ファイルを編集することで変更可能）。
+作成したディレクトリに秘密鍵とTLS証明書のファイルをそれぞれ配置する。
+配置する際のファイル名は以下の通り。
+
+- 秘密鍵：**`server.key`**
+- TLS証明書：**`server.crt`**
 
 ディレクトリが以下の状態になれば完了である。
 
@@ -105,28 +134,31 @@ server.crt  server.key
 #### 2.1.4. フォワードプロキシの設定
 
 CADDEはデータ共有の信頼性を高めるため、利用者コネクタ - 提供者コネクタ間の相互TLS通信をサポートしている。
+
 ここでは、提供者コネクタに提示するクライアント証明書、および提供者コネクタに対するインタフェースとなるフォワードプロキシの準備を行う。
 
 ##### 秘密鍵・クライアント証明書の準備
 
-[certificate.md](certificate.md)に従い、CADDEテストベッド参加サイト用の秘密鍵とワイルドカード証明書のペアを作成する。
-ここでは準備作業を簡単にするため、リバースプロキシと同じ秘密鍵・ワイルドカード証明書を用いることとする。
+証明書の準備作業を簡単にするため、クライアント証明書にはサーバ証明書に用いたものと同じCADDEテストベッド用TLS証明書を用いる。
 
-秘密鍵とワイルドカード証明書の作成後、それらを配置するためのディレクトリを作成する。
+[CADDEテストベッド参加のための事前準備](#11-caddeテストベッド参加のための事前準備)で取得した秘密鍵・TLS証明書を配置するためのディレクトリを作成する。
+
 このディレクトリはフォワードプロキシ用Dockerコンテナにマウントされる。
 
 ```bash
 mkdir ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl
 ```
 
-上で作成したディレクトリに秘密鍵とワイルドカード証明書のファイルをそれぞれ`client.key`、`client.crt`というファイル名で配置する
-（ただし、これらのファイル名はSquidの設定ファイルを編集することで変更可能）。
+作成したディレクトリに秘密鍵とTLS証明書のファイルをそれぞれ配置する。
+配置する際のファイル名は以下の通り。
 
-なお、秘密鍵・ワイルドカード証明書はいずれもフォワードプロキシ用コンテナ内部にマウントされるため、コンテナ内のユーザから読み取りできるようにファイルのアクセス権限を変更しておく。
+- 秘密鍵：**`client.key`**
+- TLS証明書：**`client.crt`**
+
+さらに、秘密鍵ファイルをフォワードプロキシ用コンテナの内部から読み取りできるよう、ファイルのアクセス権限を変更しておく。
 
 ```bash
 chmod +r ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl/client.key
-chmod +r ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl/client.crt
 ```
 
 ディレクトリが以下の状態になれば完了である。
@@ -146,20 +178,20 @@ total 20
 CADDEの実装では、利用者コネクタが提供者コネクタにアクセスするたび、SSL Bumpを利用することでフォワードプロキシがクライアント証明書を提示するようにする。
 
 このとき、利用者コネクタ本体は一時的にフォワードプロキシとの間にTLSセッションを張るため、フォワードプロキシにTLS証明書を配置する必要がある。
-そこで、フォワードプロキシに自己署名TLS証明書を配置し、プロキシがその証明書を基に動的にサーバ証明書を生成し、利用者コネクタ本体に提示するようにしている。
+そこで、フォワードプロキシに自己署名TLS証明書を配置し、プロキシがその証明書を基に動的にサーバ証明書を生成するようにしている。
 
-以上の動作を実現するため、以下のコマンドでフォワードプロキシ上にSSL Bump用自己署名TLS証明書を`squidCA.pem`という名前で作成する。
+以下のコマンドによりフォワードプロキシ上にSSL Bump用自己署名TLS証明書`squidCA.pem`を作成する。
 
 ```bash
 cd ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -keyout squidCA.pem -out squidCA.pem -subj "/C="
 ```
 
-さらに、フォワードプロキシ用自己署名証明書についても、コンテナ内のユーザから読み取りできるようにファイルのアクセス権限を変更しておく。
+<!-- さらに、フォワードプロキシ用自己署名証明書についても、コンテナ内のユーザから読み取りできるようにファイルのアクセス権限を変更しておく。
 
 ```bash
 chmod +r ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl/squidCA.pem
-```
+``` -->
 
 ディレクトリが以下の状態になれば完了である。
 
@@ -210,7 +242,6 @@ docker compose -f docker-compose_initial.yml down
 ```
 
 #### 2.1.5. データカタログの接続設定
-<!-- TODO 横断検索機能のポート番号を修正 -->
 
 横断検索カタログから取得したいデータを検索するため、横断検索機能APIのURLを以下のファイルに設定する。
 
@@ -227,7 +258,7 @@ docker compose -f docker-compose_initial.yml down
 
 ```json
 {
-    "public_ckan_url": "http://cadde-federated-catalog.koshizukalab.dataspace.internal:25000/api/package_search"
+    "public_ckan_url": "https://cadde-federated-catalog.koshizukalab.dataspace.internal:20443/backend/api/package_search"
 }
 ```
 
@@ -251,7 +282,7 @@ docker compose -f docker-compose_initial.yml down
   - コネクタの詳細ログ出力有無
   - デフォルト：`true`
 
-なお、CADDEテストベッドはロケーションサービスを含まないため、`location_service_url`の項目は空文字のままとしておく。
+CADDEテストベッドはロケーションサービスを含まないため、`location_service_url`の項目は空文字のままとしておく。
 
 以下に設定例を示す。
 
@@ -275,9 +306,8 @@ docker compose -f docker-compose_initial.yml down
 設定すべき項目は以下の通り。
 
 - **`connector_location`**
-  - データ提供者のCADDEユーザID -> 提供者コネクタのアクセスURL
   - フォーマット：`"<データ提供者ID>": { "provider_connector_url": "<提供者コネクタURL>" }`
-  - 接続先となる提供者コネクタの数だけ追記していく
+  - 接続先となる提供者コネクタの数だけ追記する
 
 以下に設定例を示す。
 
@@ -347,6 +377,8 @@ cd ${WORKDIR}/klab-connector-v4/src/consumer
 docker compose ps
 ```
 
+<img src="./images/consumer_connector.png" alt="利用者コネクタ内部構成" width="70%"/>
+
 #### 2.1.11. （参考）利用者コネクタの停止
 
 利用者コネクタを停止したい場合は、以下のコマンドを実行する。
@@ -366,15 +398,15 @@ GitHubからCADDE利用者WebAppのリポジトリをクローンする。
 cd ${WORKDIR}
 git clone https://github.com/Koshizuka-lab/ut-cadde_gui.git
 cd ut-cadde_gui
-git switch ut-cadde-v0
+git switch testbed
 ```
 
-ブランチが`ut-cadde-v0`であることを確認する。
+ブランチが`testbed`であることを確認する。
 
 ```bash
 $ git branch
   main
-* ut-cadde-v0
+* testbed
 ```
 
 #### 2.2.2. 環境変数の設定
@@ -392,12 +424,12 @@ cp .env .env.local
 
 `.env.local`ファイル内に記載すべき項目は以下の通り。
 
-- `AUTH_API_URL`
+- **`AUTH_API_URL`**
   - 認証機能CADDE APIベースURL
   - デフォルト：`https://cadde-authn.koshizukalab.dataspace.internal:18443/cadde/api/v4/`
-- `CLIENT_ID`
+- **`CLIENT_ID`**
   - 利用者WebAppのクライアントID
-- `CLIENT_SECRET`
+- **`CLIENT_SECRET`**
   - 利用者WebAppのクライアントシークレット
 
 #### 2.2.3. その他カスタマイズ可能な項目
@@ -423,7 +455,8 @@ services:
 
 ```bash
 cd ${WORKDIR}/ut-cadde_gui
-docker compose up -d --build
+docker compose build
+docker compose up -d
 ```
 
 利用者WebAppの起動状況は以下のコマンドで確認できる。
@@ -435,7 +468,7 @@ docker compose ps
 
 利用者WebAppを構築したURLにアクセスし、以下の画面が表示された上で、CADDEユーザIDとパスワードでユーザ認証に成功すれば準備は完了である。
 
-![利用者WebAppトップページ](./images/webapp_top_page.png)
+<img src="./images/webapp_top_page.png" alt="利用者WebAppトップページ" width="70%"/>
 
 #### 2.2.5. （参考）利用者WebAppの停止
 
@@ -443,20 +476,5 @@ docker compose ps
 
 ```bash
 cd ${WORKDIR}/ut-cadde_gui
-sudo docker compose down
+docker compose down
 ```
-
-<!-- # 2. 動作確認
-- XXX.mdを参照
-  - WebApp
-    - ログイン
-    - 横断検索
-    - 詳細検索
-    - データ取得（認可なし）
-    - データ取得（認可あり）
-  - API
-    - ログイン
-    - 横断検索
-    - 詳細検索
-    - データ取得（認可なし）
-    - データ取得（認可あり） -->

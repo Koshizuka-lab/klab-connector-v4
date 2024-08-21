@@ -8,7 +8,8 @@
 本ハンズオンでは、AWS上に構築したハンズオン環境において、データ利用者環境・データ提供者環境をそれぞれ構築し、それらの間でCADDEを通じたデータ検索・取得を達成することを目的とする。
 
 本ハンズオンにおいて、データ提供者はデータ利用者に対して「認可を与えるデータ」「認可を与えないデータ」の2種類を提供するようにすることで、CADDEによる主権的なデータ共有を実践する。
-<!-- TODO CADDE環境の図を加えたい -->
+
+<img src="./images/handson.drawio.png" alt="ハンズオン環境図" width="40%"/>
 
 <!-- omit in toc -->
 ## 前提
@@ -43,20 +44,37 @@
 <!-- omit in toc -->
 ### CADDEテストベッド参加のための事前準備
 
-本来、CADDEテストベッドの利用を開始するためには、各参加者が[CADDEテストベッド参加のための事前準備](./README.md#caddeテストベッド参加のための事前準備)を行うことが必要となる。
-具体的な準備事項は以下の通り。
+CADDEテストベッドの利用は、以下の[CADDEテストベッド参加のための事前準備](./README.md#caddeテストベッド参加のための事前準備)が完了していることを前提とする。
 
-- [CADDEテストベッド利用情報の取得](./README.md#caddeテストベッド利用情報の取得)
-- [CADDEテストベッド参加者環境のドメイン登録](./README.md#caddeテストベッド参加者環境のドメイン登録)
-- [CADDEテストベッド用TLS証明書の取得](./README.md#caddeテストベッド用tls証明書の取得)
+1. CADDEテストベッド利用情報の取得
+2. CADDEテストベッド参加者環境のドメイン登録
+3. CADDEテストベッド用TLS証明書の取得
 
-しかし、本ハンズオンでは、CADDE参加者環境の構築・設定・利用方法に焦点を当てるため、これらの準備情報をハンズオン環境用に事前に割り当てる。
-
+本ハンズオンでは、CADDE参加者環境の構築・設定およびCADDEの利用方法に焦点を当てるため、ハンズオン専用の準備情報を事前に割り当てる。
 そのため、ハンズオン参加者が上記の事前準備を行う必要はない。
-下記のハンズオン作業では、東京大学によって割り振られたハンズオン用の事前準備情報（CADDEユーザID、ドメイン名、TLS証明書など）を用いることとする。
 
 <!-- omit in toc -->
 ## ハンズオン手順
+
+<!-- omit in toc -->
+### 目次
+
+- [1. 実行環境の準備](#1-実行環境の準備)
+- [2. CADDE参加者環境の構築](#2-cadde参加者環境の構築)
+  - [2.1. データ提供者環境](#21-データ提供者環境)
+  - [2.2. データ利用者環境](#22-データ利用者環境)
+- [3. CADDEでデータを提供する](#3-caddeでデータを提供する)
+  - [3.1. データサーバを構築する](#31-データサーバを構築する)
+  - [3.2. データ原本情報を登録する](#32-データ原本情報を登録する)
+  - [3.3. データカタログを作成する](#33-データカタログを作成する)
+  - [3.4. 認可を設定する](#34-認可を設定する)
+  - [3.5. 提供者コネクタとデータサーバを接続する](#35-提供者コネクタとデータサーバを接続する)
+- [4. CADDEでデータを取得する](#4-caddeでデータを取得する)
+  - [4.1. ユーザ認証](#41-ユーザ認証)
+  - [4.2. 利用者コネクタの接続設定](#42-利用者コネクタの接続設定)
+  - [4.3. 横断検索によってデータを発見する](#43-横断検索によってデータを発見する)
+  - [4.4. データ提供者からデータを取得する](#44-データ提供者からデータを取得する)
+- [5. CADDE上のデータの来歴を確認する](#5-cadde上のデータの来歴を確認する)
 
 ### 1. 実行環境の準備
 
@@ -115,26 +133,30 @@ CADDE参加者環境の構築・利用は、以下のコマンドおよびソフ
 
 ### 2. CADDE参加者環境の構築
 
-データ提供者環境の構築手順は [provider.md > 2. インストール](./provider.md#2-インストール) を参照する。<br/>
-なお、[データ提供設定](./provider.md#3-データ提供設定) については、本資料 [3. CADDEでデータを提供する](#3-caddeでデータを提供する) にて具体的に扱う。
+#### 2.1. データ提供者環境
 
-データ利用者環境の構築手順は [consumer.md > 2. インストール](./consumer.md#2-インストール) を参照する。
+データ提供者環境の構築手順は[provider.md](./provider.md)を参照する。
+
+データ提供者環境の構築後に準備すべき[データ提供設定](./provider.md#3-データ提供設定)については、本資料「[3. CADDEでデータを提供する](#3-caddeでデータを提供する)」にて扱う。
+
+#### 2.2. データ利用者環境
+
+データ利用者環境の構築手順は[consumer.md](./consumer.md)を参照する。
 
 ---
 
 ### 3. CADDEでデータを提供する
 
-本章では、データ提供者がコネクタを経由してCADDE上にデータを提供する手順を追う。
+本章では、データ提供者がコネクタを経由してCADDE上にデータを提供する手順を実践する。
 
 #### 3.1. データサーバを構築する
 
-はじめに、本CADDEハンズオンでのデータ共有に利用するデータサーバを、提供者コネクタからのみアクセス可能な非公開のHTTPサーバとして構築する。
+本CADDEハンズオンで利用するデータサーバを、提供者コネクタからのみアクセス可能な非公開のHTTPサーバとして構築する。
 
 そのために、データ提供者環境を構築したものと同じホスト上で、HTTPサーバ用Dockerコンテナを起動する。
 
-データサーバを非公開にするためには、データ提供者環境内部の独自ドメインを用いる。
-具体的には、データ提供者がHTTPサーバ用Dockerコンテナに対して独自ドメインを割り当て、これを提供者コネクタのみが名前解決できるよう設定する。
-その上で、データのアクセスURLに独自ドメインを含めたまま、データカタログを公開するようにする。
+データサーバを非公開にするためには、データ提供者環境内部の独自ドメインを用いる。<br/>
+具体的には、HTTPサーバ用Dockerコンテナに対して、提供者コネクタのみが名前解決できる独自ドメインを割り当てるようにする。
 
 ##### HTTPサーバ用Dockerコンテナの起動
 
@@ -185,9 +207,8 @@ docker compose up -d
 
 - `~/cadde_testbed/private-http-server/data`
 
-配置するデータの中身は各ハンズオン参加者が自由に決定できる。
-
-ここでは参考としてシンプルなテキストファイルを作成し、「認可を与えるデータ」「認可を与えないデータ」を分かりやすいように配置する。
+配置するデータの中身は各ハンズオン参加者が自由に決定できる。<br/>
+本資料では参考として単純なテキストファイルを作成する例を示す。
 
 ```bash
 cd ~/cadde_testbed/private-http-server
@@ -198,19 +219,17 @@ echo "Unauthorized data from CADDE." > ./data/unauthorized.txt
 
 配置したデータは以下のURLから確認できる。
 
-- `http://<ホストのIPアドレス>:8080/<dataディレクトリ以下のパス>`
-  - 例：`http://10.250.250.10:8080/authorized.txt`
+- `http://<データ提供者環境用ホストのIPアドレス>:8080/<dataディレクトリ以下のパス>`
+  - 例：`http://10.250.245.10:8080/authorized.txt`
 
 ```bash
-$ curl http://10.250.250.10:8080/authorized.txt
+$ curl http://10.250.245.10:8080/authorized.txt
 Authorized data from CADDE.
 ```
 
 ##### HTTPサーバ用Dockerコンテナに独自ドメインを割り当てる
 
-データサーバを非公開にするために、Dockerコンテナに対して独自ドメインを割り当て、提供者コネクタから名前解決できるようにする。
-
-まず、データ提供者環境のホストにログインする。
+データサーバを非公開にするために、Dockerコンテナに対して独自ドメインを割り当てる。
 
 提供者コネクタが起動中の状態であれば、一度終了させる。
 
@@ -219,7 +238,7 @@ cd ~/cadde_testbed/klab-connector-v4/src/provider
 sh stop.sh
 ```
 
-次に、以下のファイルを編集し、提供者コネクタの`connector-main`コンテナ内にデータサーバの独自ドメインとIPアドレスの対応を追加する。
+次に、以下のファイルを編集し、提供者コネクタ`connector-main`コンテナ内にデータサーバ用の独自ドメインとIPアドレスの対応を追加する。
 
 - `klab-connector-v4/src/provider/docker-compose.yml`
 
@@ -227,11 +246,11 @@ sh stop.sh
 
 - services
   - provider-connector-main
-    - `extra_hosts`
+    - **`extra_hosts`**
       - コンテナ内のみで解決される独自ドメインを以下のフォーマットで追加する
         - `<domain>:<IP address>`
       - データサーバ用ドメインの文字列はハンズオン環境に合わせて決定する
-        - `data-management.<sitename>.internal`
+        - `data-management.<sitename>.internal`（例：`data-management.site06.internal`）
 
 以下に設定例を示す。
 
@@ -243,7 +262,7 @@ services:
       - "data-management.<sitename>.internal:host-gateway"
 ```
 
-なおここでは、データサーバと提供者コネクタが同一IPアドレスのホスト上で構築されていることを前提としている。
+※ ここでは、データサーバと提供者コネクタが同一IPアドレスのホスト上で構築されていることを前提としている。
 
 独自ドメインの設定が完了すれば、提供者コネクタを再度起動する。
 
@@ -259,21 +278,21 @@ sh start.sh
 HTTPサーバに配置した2種類のデータそれぞれの原本情報を来歴管理機能に新たに登録する。
 
 原本情報の登録には来歴管理機能の履歴登録APIを用いる。<br/>
-履歴登録APIを用いたデータ原本情報の登録リクエストの詳細は、[provider.md](./provider.md#31-データ原本情報の登録) を参照する。
+履歴登録APIを用いたデータ原本情報の登録リクエストの詳細は[provider.md](./provider.md#31-データ原本情報の登録)を参照する。
 
 データ提供者環境のホストにログインした上で、以下のコマンドを順に実行する。
 
-ただし、ハンズオン環境では、データアクセスURLおよびデータファイルパスの記述に注意すること。
+ハンズオン環境では、データアクセスURLおよびデータファイルパスの記述に注意すること。
 
 - データのアクセスURL **`cdlurl`**
-  - [データサーバの構築時](#31-データサーバを構築する) に、データサーバに割り当てた独自ドメインを使って記述する
+  - 「[3.1. データサーバを構築する](#31-データサーバを構築する)」で割り当てた独自ドメインを使って記述する
   - 例：`http://data-management.<sitename>.internal:8080/authorized.txt`
 - データファイルのパス **`data_file`**
-  - [データサーバの構築時](#31-データサーバを構築する) に配置したファイルの絶対パスを記述する
+  - 「[3.1. データサーバを構築する](#31-データサーバを構築する)」で配置したファイルの絶対パスを記述する
   - 例：`/home/ubuntu/cadde_testbed/private-http-server/data/authorized.txt`
 
 ```bash
-# 1つ目のサブパート：JSONを作成
+# 1つ目のサブパート：JSONを作成 -> 一時ファイルに保存
 json_request=$(cat <<EOF
 {
   "cdldatamodelversion": "2.0",
@@ -288,7 +307,6 @@ json_request=$(cat <<EOF
 EOF
 )
 
-# 1つ目のサブパート：JSONを一時ファイルに保存
 json_temp_file=$(mktemp)
 echo "$json_request" > "$json_temp_file"
 
@@ -303,6 +321,9 @@ curl -v -sS -X POST "http://cadde-provenance-management.koshizukalab.dataspace.i
 ```
 
 データ原本情報の登録リクエストに成功すると、データ原本情報の登録イベントを識別するIDが返される。
+このIDは後述する「[3.3. データカタログを作成する](#33-データカタログを作成する)」用に記録しておく。
+
+HTTPサーバに配置した2種類のデータそれぞれについて、原本情報の登録が成功すれば完了である。
 
 ```json
 {
@@ -310,21 +331,17 @@ curl -v -sS -X POST "http://cadde-provenance-management.koshizukalab.dataspace.i
 }
 ```
 
-このIDは [3.3. データカタログを作成する](#33-データカタログを作成する) で用いるため、記録しておく。
-
-HTTPサーバに配置した2種類のデータそれぞれについて、原本情報の登録が成功すれば完了である。
-
 ---
 
 #### 3.3. データカタログを作成する
 
-2種類のデータそれぞれのデータカタログを自身の提供者カタログサイト上で作成する。
+HTTPサーバに配置した2種類のデータそれぞれについて、提供者カタログサイト上でデータカタログを作成する。
 
-詳細な手順は [provider.md](./provider.md#32-データカタログの作成) を参照する。
+データカタログの作成手順は[provider.md](./provider.md#32-データカタログの作成)を参照する。
 
 以下のように2種類のデータそれぞれについてデータカタログを作成できれば完了である。
 
-![CKANに2種類のデータを追加した](./images/ckan_added_handson_datasets.png)
+<img src="./images/ckan_added_handson_datasets.png" alt="CKANに2種類のデータセットを追加した画面" width="70%"/>
 
 ---
 
@@ -349,7 +366,7 @@ HTTPサーバに配置した2種類のデータそれぞれについて、原本
   - ユーザに対する認可
     - 自分のハンズオン用CADDEユーザID以外の適当な文字列を指定する
 
-認可を設定するための詳細な手順は、[provider.md](./provider.md#33-認可の設定) を参照する。
+認可を設定するための詳細な手順は[provider.md](./provider.md#33-認可の設定)を参照する。
 
 ---
 
@@ -357,7 +374,7 @@ HTTPサーバに配置した2種類のデータそれぞれについて、原本
 
 HTTPサーバに配置した2種類のデータのロケーションを提供者コネクタに設定する。
 
-詳細な手順は [provider.md](./provider.md#34-データサーバの接続設定) を参照する。
+詳細な手順は[provider.md](./provider.md#34-データサーバの接続設定)を参照する。
 
 データ提供者環境のホストにログインした上で、以下のファイルを編集する。
 
@@ -369,52 +386,57 @@ HTTPサーバに配置した2種類のデータのロケーションを提供者
 データURLは各自の環境に応じて適宜設定する。
 
 ```json
-"authorization": [
-    {
-        "url": "http://data-management.site06.internal:8080/authorized.txt",
-        "enable": true
-    },
-    {
-        "url": "http://data-management.site06.internal:8080/unauthorized.txt",
-        "enable": true
-    }
-],
-"contract_management_service": [
-    {
-        "url": "http://data-management.site06.internal:8080/authorized.txt",
-        "enable": false
-    },
-    {
-        "url": "http://data-management.site06.internal:8080/unauthorized.txt",
-        "enable": false
-    }
-],
-"register_provenance": [
-    {
-        "url": "http://data-management.site06.internal:8080/authorized.txt",
-        "enable": true
-    },
-    {
-        "url": "http://data-management.site06.internal:8080/unauthorized.txt",
-        "enable": true
-    }
-]
+{
+    "basic_auth": [],
+    "authorization": [
+        {
+            "url": "http://data-management.siteXX.internal:8080/authorized.txt",
+            "enable": true
+        },
+        {
+            "url": "http://data-management.siteXX.internal:8080/unauthorized.txt",
+            "enable": true
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url": "http://data-management.siteXX.internal:8080/authorized.txt",
+            "enable": false
+        },
+        {
+            "url": "http://data-management.siteXX.internal:8080/unauthorized.txt",
+            "enable": false
+        }
+    ],
+    "register_provenance": [
+        {
+            "url": "http://data-management.siteXX.internal:8080/authorized.txt",
+            "enable": true
+        },
+        {
+            "url": "http://data-management.siteXX.internal:8080/unauthorized.txt",
+            "enable": true
+        }
+    ]
+}
 ```
 
 ---
 
 ### 4. CADDEでデータを取得する
 
-本章では、データ利用者が利用者WebApp・利用者コネクタを介して、CADDEからデータを取得する手順を追う。
+本章では、データ利用者が利用者WebApp・利用者コネクタを介して、CADDEからデータを取得する手順を実践する。
 
 #### 4.1. ユーザ認証
 
 利用者WebAppトップページからハンズオン用のCADDEユーザID・パスワードを入力してログインする。
 
-![利用者WebAppトップページ](./images/webapp_top_page.png)
+<img src="./images/webapp_top_page.png" alt="利用者WebAppトップページ" width="70%"/>
 
 このとき、背後では利用者WebAppが認証機能にリクエストを行なってCADDE利用者トークンを取得している。
 CADDE利用者トークンはCADDEユーザに関する情報を含んでおり、後述する詳細検索やデータ取得における認可判断に利用される。
+
+#### 4.2. 利用者コネクタの接続設定
 
 ログインに成功すると次の画面に遷移する。
 
@@ -422,25 +444,25 @@ CADDE利用者トークンはCADDEユーザに関する情報を含んでおり�
 
 - 例：`https://cadde-consumer-handson.site06.dataspace.internal:443/`
 
-![利用者WebApp設定ページ](./images/webapp_settings.png)
+<img src="./images/webapp_settings.png" alt="利用者WebApp設定ページ" width="70%"/>
 
-#### 4.2. 横断検索によってデータを発見する
+#### 4.3. 横断検索によってデータを発見する
 
 利用者WebApp画面左側のメニューから`Search`を選択し、データ検索画面に遷移する。
 
-![利用者WebApp データカタログ検索画面](./images/webapp_search_page.png)
+<img src="./images/webapp_search_page.png" alt="利用者WebApp データカタログ検索画面" width="70%"/>
 
 画面上部の検索窓に、作成したデータカタログのタイトルやデータURLなどの情報を一部入力して検索する。
 
-ここで`search_type`の欄の`meta`という値が、データカタログの横断検索リクエストを行うことを示している。
-このとき、背後では利用者WebAppが横断検索機能にリクエストを行なってクローリングされたデータカタログの一覧を取得している。
+ここで`search_type`の欄の`meta`という値が、データカタログの横断検索リクエストを行うことを示している。<br/>
+このとき、背後では利用者WebAppが横断検索機能にリクエストを行ない、クローリングされたデータカタログの一覧を取得している。
 
 検索結果が表示され、データカタログページに遷移して情報を確認することができれば完了である。
 
 以下に画面例を示す。
 
-![利用者WebApp データカタログ検索結果](./images/webapp_search_result.png)
-![利用者WebApp データカタログ詳細画面](./images/webapp_dataset.png)
+<img src="./images/webapp_search_result.png" alt="利用者WebApp データカタログ検索結果" width="70%"/>
+<img src="./images/webapp_dataset.png" alt="利用者WebApp データカタログ詳細画面" width="70%"/>
 
 <!-- ####  4.3. 詳細検索によってデータカタログを取得する -->
 <!-- ここでは
@@ -461,40 +483,40 @@ CADDE利用者トークンはCADDEユーザに関する情報を含んでおり�
 ![](./images/webapp_search2.png)
 ![](./images/webapp_dataset.png) -->
 
-#### 4.3. データ提供者からデータを取得する
+#### 4.4. データ提供者からデータを取得する
 
-ここでは実際にデータ提供者からCADDEを介して認可付きのデータを取得する手順を示す。
+##### 認可ありのデータ
 
-データ検索結果から、認可ありのデータカタログページに遷移し、取得したいリソースにチェックを入れる。
+データ検索結果から、「認可ありのデータ」のデータセットページに遷移し、取得したいリソースにチェックを入れる。
 
-![利用者WebApp リソースチェック](./images/webapp_check_resource.png)
+<img src="./images/webapp_check_resource.png" alt="利用者WebApp リソースチェック" width="70%"/>
 
-この状態で`Fetch Data`を押すと、背後で利用者WebAppが提供者コネクタに対してデータ取得リクエストを送信し、データファイルを取得する。
+この状態で`Fetch Data`を押すと、背後で利用者WebAppが提供者コネクタに対してデータ取得リクエストを送信する。
 
 データ提供者環境でデータアクセスが認可されれば、実際にデータが転送される。
 その結果、取得できたリソースに緑色のチェックマークが表示される。
 
-![利用者WebApp リソースチェック完了](./images/webapp_checked_resource.png)
+<img src="./images/webapp_checked_resource.png" alt="利用者WebApp リソースチェック完了" width="70%"/>
 
 この状態で`Download`を押せば、ブラウザにデータがダウンロードされ、CADDEを通じたデータ転送が完了する。
 
-一方で、認可なしのデータカタログページに遷移し、`Fetch Data`を押すと、以下のエラーメッセージが表示される。
+##### 認可なしのデータ
 
-![利用者WebApp リソース取得拒否](./images/webapp_denied_resource.png)
+「認可なしのデータ」に対して、`Fetch Data`を押してデータ取得リクエストを送信すると、以下のエラーメッセージが表示される。
+
+<img src="./images/webapp_denied_resource.png" alt="利用者WebApp リソース取得拒否" width="70%"/>
 
 これは、データ提供者環境で、当該データに対するアクセスが認可されていないことを示すものである。
-
-以上、2種類のデータに対してデータ取得リクエストを行い、認可の有無による挙動の違いを確認したことで、CADDEによる主権的なデータ共有を実現できたと言える。
 
 ---
 
 ### 5. CADDE上のデータの来歴を確認する
 
-最後に、データ提供者・データ利用者それぞれがCADDE上で共有されたデータの来歴（データ交換・加工の履歴）を確認する手順を追う。
+最後に、CADDE上で共有されたデータの来歴確認（データ交換・加工の履歴）を実践する。
 ここでは、認可を与えるデータ、認可を与えないデータそれぞれに対して来歴を確認する。
 
 データの来歴を確認するためには、来歴管理機能の来歴確認APIを利用する。<br/>
-来歴管理機能APIの詳細な仕様は、[CADDE公式の技術仕様](https://github.com/CADDE-sip/documents)を参照すること。
+来歴管理機能APIの詳細な仕様は、[CADDE来歴管理システム設計書](https://github.com/CADDE-sip/documents/tree/cd02836c046054d9661f9963d3801cc9fd230631/doc/2/50_V4_%E3%83%A6%E3%83%BC%E3%82%B9%E3%82%B1%E3%83%BC%E3%82%B9%E5%9F%BA%E6%9C%AC%E8%A8%AD%E8%A8%88%E6%9B%B8/70_V4_%E8%A8%AD%E8%A8%88%E6%9B%B8_%E6%9D%A5%E6%AD%B4%E7%AE%A1%E7%90%86%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E8%A8%AD%E8%A8%88%E6%9B%B8)を参照すること。
 
 来歴確認APIの実行例は以下の通り。
 
@@ -584,7 +606,7 @@ APIの実行に成功すると、認可を与えるデータについては以�
 - **`datauser`**
   - データ利用者のCADDEユーザID
 
-一方、認可を与えないデータについては、以下のようにデータ原本情報の登録イベントだけが格納されたリストが返される。
+一方、認可を与えないデータについては、データの送信および受信が実行されていないため、以下のようにデータ原本情報の登録イベントだけが格納されたリストが返される。
 
 ```json
 [

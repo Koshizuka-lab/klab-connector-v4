@@ -284,7 +284,7 @@ HTTPサーバに配置した2種類のデータそれぞれの原本情報を来
 
 ハンズオン環境では、データアクセスURLおよびデータファイルパスの記述に注意すること。
 
-- データのアクセスURL **`cdlurl`**
+- データのアクセスURL **`cdluri`**
   - 「[3.1. データサーバを構築する](#31-データサーバを構築する)」で割り当てた独自ドメインを使って記述する
   - 例：`http://data-management.<sitename>.internal:8080/authorized.txt`
 - データファイルのパス **`data_file`**
@@ -442,7 +442,7 @@ CADDE利用者トークンはCADDEユーザに関する情報を含んでおり�
 
 ここでWebAppが接続先とする利用者コネクタURLを指定し、`Confirm`を押す。
 
-- 例：`https://cadde-consumer-handson.site06.dataspace.internal:443/`
+- 例：`https://cadde-consumer-handson.siteXX.dataspace.internal:443/`
 
 <img src="./images/webapp_settings.png" alt="利用者WebApp設定ページ" width="70%"/>
 

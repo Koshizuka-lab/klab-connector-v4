@@ -127,7 +127,7 @@ cp .env.example .env
 ```
 
 `.env`ファイル内で、主に設定すべき項目は以下の通り。
-なお、デフォルトの記載内容のまま変更しなくてもよい。
+なお、**`CKAN_SITE_URL`** 以外の項目についてはデフォルトの記載内容のまま変更しなくてもよい。
 
 - **`NGINX_SSLPORT_HOST`**
   - CKANコンテナを公開するポート番号
@@ -142,6 +142,31 @@ cp .env.example .env
 - **`CKAN_SYSADMIN_PASSWORD`**
   - CKANサイト管理者のパスワード（英数字8文字以上）
   - デフォルト：`test1234`
+
+さらに、CKAN用Dockerfile（`ckan-docker/ckan/Dockerfile`）を編集し、CKANイメージのバージョンを2.10系に書き換える。
+
+```diff
+- FROM ckan/ckan-base:2.11.0
++ FROM ckan/ckan-base:2.10
+
+# Install any extensions needed by your CKAN instance
+# See Dockerfile.dev for more details and examples
+
+# Copy custom initialization scripts
+COPY docker-entrypoint.d/* /docker-entrypoint.d/
+
+# Apply any patches needed to CKAN core or any of the built extensions (not the
+# runtime mounted ones)
+COPY patches ${APP_DIR}/patches
+
+RUN for d in $APP_DIR/patches/*; do \
+        if [ -d $d ]; then \
+            for f in `ls $d/*.patch | sort -g`; do \
+                cd $SRC_DIR/`basename "$d"` && echo "$0: Applying patch $f to $SRC_DIR/`basename $d`"; patch -p1 < "$f" ; \
+            done ; \
+        fi ; \
+    done
+```
 
 ##### TLSサーバ証明書の配置
 
@@ -348,7 +373,7 @@ CADDEテストベッド用TLS証明書をリバースプロキシに配置する
 このディレクトリはリバースプロキシ用Dockerコンテナにマウントされる。
 
 ```bash
-mkdir ${WORKDIR}/klab-connector-v4/src/provider/nginx/volumes/ssl
+mkdir -p ${WORKDIR}/klab-connector-v4/src/provider/nginx/volumes/ssl
 ```
 
 作成したディレクトリに秘密鍵とTLS証明書のファイルをそれぞれ配置する。
@@ -1108,7 +1133,7 @@ curl -v -sS -X POST "https://<提供者カタログサイトのFQDN>:<ポート�
         },
         {
             "url": "https://example2.com/data.txt",
-            "enable": false
+            "enable": true
         }
     ],
     "contract_management_service": [

@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:19.0.2 as builder
+FROM quay.io/keycloak/keycloak:19.0.2 AS builder
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 ENV KC_FEATURES=token-exchange

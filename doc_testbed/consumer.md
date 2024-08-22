@@ -115,7 +115,7 @@ sh setup.sh
 このディレクトリはリバースプロキシ用Dockerコンテナにマウントされる。
 
 ```bash
-mkdir ${WORKDIR}/klab-connector-v4/src/consumer/nginx/volumes/ssl
+mkdir -p ${WORKDIR}/klab-connector-v4/src/consumer/nginx/volumes/ssl
 ```
 
 作成したディレクトリに秘密鍵とTLS証明書のファイルをそれぞれ配置する。
@@ -146,7 +146,7 @@ CADDEはデータ共有の信頼性を高めるため、利用者コネクタ - 
 このディレクトリはフォワードプロキシ用Dockerコンテナにマウントされる。
 
 ```bash
-mkdir ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl
+mkdir -p ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl
 ```
 
 作成したディレクトリに秘密鍵とTLS証明書のファイルをそれぞれ配置する。
@@ -187,11 +187,11 @@ cd ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -keyout squidCA.pem -out squidCA.pem -subj "/C="
 ```
 
-<!-- さらに、フォワードプロキシ用自己署名証明書についても、コンテナ内のユーザから読み取りできるようにファイルのアクセス権限を変更しておく。
+さらに、フォワードプロキシ用自己署名証明書についても、コンテナ内のユーザから読み取りできるようにファイルのアクセス権限を変更しておく。
 
 ```bash
 chmod +r ${WORKDIR}/klab-connector-v4/src/consumer/squid/volumes/ssl/squidCA.pem
-``` -->
+```
 
 ディレクトリが以下の状態になれば完了である。
 
@@ -315,9 +315,11 @@ CADDEテストベッドはロケーションサービスを含まないため、
 {
     "connector_location": {
         "test1": {
-            "provider_connector_url": "https://cadde-provider-test1.koshizukalab.dataspace.internal:1443"
+            "provider_connector_url": "https://cadde-provider-test1.koshizukalab.dataspace.internal:443"
         },
-        ...
+        "handson-site0X": {
+            "provider_connector_url": "https://cadde-provider-handson.site0X.dataspace.internal:443"
+        }
     }
 }
 ```
